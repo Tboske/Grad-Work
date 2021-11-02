@@ -225,9 +225,9 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 
 		for (uint32_t i = 0; i < tempIndices.size(); ++i)
 		{
-			indices.push_back(i * 3);
-			indices.push_back(i * 3 + 1);
-			indices.push_back(i * 3 + 2);
+			indices.emplace_back(i * 3);
+			indices.emplace_back(i * 3 + 1);
+			indices.emplace_back(i * 3 + 2);
 
 			const IPoint4& index = tempIndices[i];
 
@@ -242,9 +242,9 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			// triangle
 			//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
 			FPoint3 color{ 0.8f, 0.8f, 0.8f };
-			vertices.push_back(Mesh::Vertex_Input(p0, normal, color));
-			vertices.push_back(Mesh::Vertex_Input(p1, normal, color));
-			vertices.push_back(Mesh::Vertex_Input(p2, normal, color));
+			vertices.emplace_back(p0, normal, color);
+			vertices.emplace_back(p1, normal, color);
+			vertices.emplace_back(p2, normal, color);
 		}
 	}
 	auto endT = high_resolution_clock::now();

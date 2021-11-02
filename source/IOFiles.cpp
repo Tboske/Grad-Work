@@ -230,11 +230,21 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			indices.push_back(i * 3 + 2);
 
 			const IPoint4& index = tempIndices[i];
-			FPoint3 randColor{ 1, 1, 1 };
-			// triangle 1
-			vertices.push_back(Mesh::Vertex_Input(tempVerts[index.x], { 1,1,1 }, randColor));
-			vertices.push_back(Mesh::Vertex_Input(tempVerts[index.y], { 1,1,1 }, randColor));
-			vertices.push_back(Mesh::Vertex_Input(tempVerts[index.z], { 1,1,1 }, randColor));
+
+			const FPoint3& p0 = tempVerts[index.x];
+			const FPoint3& p1 = tempVerts[index.y];
+			const FPoint3& p2 = tempVerts[index.z];
+
+			// normal Calculation
+			FVector3 normal{ Cross(p1 - p0, p2 - p0) };
+			Normalize(normal);
+
+			// triangle
+			//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
+			FPoint3 color{ 0.8f, 0.8f, 0.8f };
+			vertices.push_back(Mesh::Vertex_Input(p0, normal, color));
+			vertices.push_back(Mesh::Vertex_Input(p1, normal, color));
+			vertices.push_back(Mesh::Vertex_Input(p2, normal, color));
 		}
 	}
 	auto endT = high_resolution_clock::now();

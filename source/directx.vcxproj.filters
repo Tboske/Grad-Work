@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{58139c31-ec80-4312-9be0-a232fff86926}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Helpers">
+      <UniqueIdentifier>{72056cb6-72a2-42b7-b05e-376f1ddd957e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Math">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Engine\Objects">
+      <UniqueIdentifier>{37859e8b-8a6f-4c5b-9ecb-9bb370d34940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\ImGui">
+      <UniqueIdentifier>{d4157165-4507-41c9-b7c5-6e86d42129a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Renderer">
+      <UniqueIdentifier>{ddb17eba-e15e-4597-8bf6-064b16b159d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mesh Generation">
+      <UniqueIdentifier>{bb265b4d-f0c9-4708-829c-0812dad20d44}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EMath.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EMathUtilities.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EMatrix.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EMatrix2.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EMatrix3.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EMatrix4.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EPoint.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EPoint2.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EPoint3.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EPoint4.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EVector.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EVector2.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EVector3.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="EVector4.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="ERenderer.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="ETimer.h">
+      <Filter>Engine\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Engine\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneGraph.h">
+      <Filter>Engine\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Engine\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\imconfig.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\imgui.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\imgui_internal.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\imstb_rectpack.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\imstb_textedit.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\imstb_truetype.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\backends\imgui_impl_dx11.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui-1.84.2\backends\imgui_impl_sdl.h">
+      <Filter>Engine\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="IOFiles.h">
+      <Filter>Mesh Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="ERGBColor.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ERenderer.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ETimer.cpp">
+      <Filter>Engine\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Engine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneGraph.cpp">
+      <Filter>Engine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Engine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\imgui.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\imgui_demo.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\imgui_draw.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\imgui_tables.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\imgui_widgets.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\backends\imgui_impl_dx11.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui-1.84.2\backends\imgui_impl_sdl.cpp">
+      <Filter>Engine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="IOFiles.cpp">
+      <Filter>Mesh Generation</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -3,3 +3,10 @@
 ################################################################################
 
 /source/Resources/Import/test.elem
+/source/Resources/Import/test.pts
+/source/Resources/Import/test.surf
+/source/TempFiles
+/source/Resources
+/source/.vs
+/lib
+/bin

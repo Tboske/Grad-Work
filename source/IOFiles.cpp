@@ -78,28 +78,36 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 	return true;
 }
 
-void IOFiles::ImportFile(ID3D11Device* pDevice, const std::string& file, const std::string& name, const FPoint3& pos)
+void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint3& pos)
 {
-	std::regex fileType{ ".+\\.(.+)$" };
+	auto inst = GetInstance();
+	inst->m_InProgress = true;
+
+	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
 	std::smatch sm{};
 
-	if (std::regex_match(file, sm, fileType))
+	const std::string importLocation{ "Resources/Import/" + file};
+
+	if (std::regex_match(importLocation, sm, fileType))
 	{
 		std::vector<Mesh::Vertex_Input> vertices;
 		std::vector<uint32_t> indices;
 
-		static const std::string importFolder{ "Resources/Import/" };
-		if (sm[1] == "obj")
-			GetInstance()->ImportOBJData(importFolder + file, vertices, indices);
-		else if (sm[1] == "vtk")
-			GetInstance()->ImportVTKData(importFolder + file, vertices, indices);
+		if (name.empty())
+			name = sm[1];
+
+		if (sm[2] == "obj")
+			inst->ImportOBJData(importLocation, vertices, indices);
+		else if (sm[2] == "vtk")
+			inst->ImportVTKData(importLocation, vertices, indices);
 		else
 			std::cout << "Unsupported file extension\n";
 
 		SceneGraph::GetInstance()->AddMesh(
-			new Mesh(pDevice, name, vertices, indices, pos)
+			new Mesh(inst->m_pDevice, name, vertices, indices, pos)
 		);
 	}
+	inst->m_InProgress = false;
 }
 
 void IOFiles::AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index)

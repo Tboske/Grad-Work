@@ -49,7 +49,7 @@ int main(int argc, char* args[])
 	auto pRenderer{ std::make_unique<Elite::Renderer>(pWindow) };
 
 	// initialize input output files
-	IOFiles::Initialize();
+	IOFiles::Initialize(pRenderer->GetDevice());
 
 	// Initialize SceneGraph
 	SceneGraph* scene = SceneGraph::GetInstance();

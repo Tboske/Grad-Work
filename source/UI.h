@@ -14,8 +14,6 @@ public:
 	void RenderUI(float);
 
 private:
-	ID3D11Device* m_pDevice = nullptr;
-
 	static const ImGuiWindowFlags m_WindowFlags{
 		ImGuiWindowFlags_NoTitleBar |
 		ImGuiWindowFlags_NoScrollbar |
@@ -28,7 +26,7 @@ private:
 	char m_MeshName[64]{};
 	int m_SelectedFileType = 0;
 	const char* m_pFileTypes[2]{ ".obj", ".vtk" };
-
+	float m_Pos[3] = { 0,0,0 };
 
 	int m_SelectedAlgorithm = 0;
 	const char* m_pAlgorithms[2]{ "Marching Cubes", "Dual Contouring" };

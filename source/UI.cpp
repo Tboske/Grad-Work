@@ -5,7 +5,6 @@
 #include "SceneGraph.h"
 
 UI::UI(SDL_Window* pWindow, ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext)
-	: m_pDevice{ pDevice }
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -43,6 +42,8 @@ void UI::RenderUI(float height)
 
 	ImGui::Begin("test", NULL, m_WindowFlags);
 	{
+		LoadingPopUp();
+
 		ImGui::SetWindowPos({ 0, 0 });
 		ImGui::SetWindowSize({ 400, height });
 		if (ImGui::BeginTabBar("Tab"))
@@ -70,13 +71,16 @@ void UI::ImportTab()
 		ImGui::Combo("FileType", &m_SelectedFileType, m_pFileTypes, IM_ARRAYSIZE(m_pFileTypes));
 		ImGui::InputTextWithHint("Filename", "VoxelFile", m_ImportFile, IM_ARRAYSIZE(m_ImportFile));
 		ImGui::InputTextWithHint("MeshName", "Default", m_MeshName, IM_ARRAYSIZE(m_MeshName));
-		if (ImGui::Button("Import!", { ImGui::GetContentRegionAvailWidth(), 25 }))
+		ImGui::InputFloat3("Position", m_Pos);
+		if (ImGui::Button("Import!", { -1, 25 }))
 		{
-			IOFiles::ImportFile(m_pDevice, std::string() + m_ImportFile + m_pFileTypes[m_SelectedFileType], m_MeshName);
-			ImGui::OpenPopup("LoadingPopUp");
-		}
+			std::string file{};
+			file += m_ImportFile;
+			file += m_pFileTypes[m_SelectedFileType];
 
-		LoadingPopUp();
+			std::thread thr(IOFiles::ImportFile, file, m_MeshName, FPoint3{ m_Pos[0], m_Pos[1], m_Pos[2] });
+			thr.detach();
+		}
 
 		ImGui::EndTabItem();
 	}
@@ -114,12 +118,27 @@ void UI::MeshTab() const
 		for (int i = 0; i < meshList.size(); i++)
 		{
 			FMatrix4& transform = meshList[i]->GetTransform();
-			ImGui::PushID(i * 2);
-				ImGui::Text(meshList[i]->GetMeshName().c_str());
-				ImGui::Text("Position: ");
-				ImGui::SameLine();
-				ImGui::DragFloat3("", &transform[3].x, 0.05f, -FLT_MAX, +FLT_MAX);
-			ImGui::PopID();
+			if(ImGui::TreeNode(meshList[i], meshList[i]->GetMeshName().c_str()))
+			{
+				// Position of the object
+				ImGui::PushID(i * 2); 
+					ImGui::Text("Position: ");
+					ImGui::SameLine();
+					ImGui::DragFloat3("", &transform[3].x, 0.05f, -FLT_MAX, +FLT_MAX);
+				ImGui::PopID();
+				// scale of the object
+				ImGui::PushID(i * 2 + 1);
+					float scale[4] = { transform[0].x, transform[1].y, transform[2].z, 1.f };
+					ImGui::Text("Scale: ");
+					ImGui::SameLine();
+					ImGui::DragFloat4("", scale, 0.01f, -FLT_MAX, +FLT_MAX);
+				
+					transform[0].x = scale[0] * scale[3];
+					transform[1].y = scale[1] * scale[3];
+					transform[2].z = scale[2] * scale[3];
+				ImGui::PopID();
+			ImGui::TreePop();
+			}
 		}
 
 		ImGui::EndTabItem();
@@ -132,14 +151,13 @@ void UI::LoadingPopUp() const
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-	if (ImGui::BeginPopupModal("LoadingPopUp", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	auto progress = IOFiles::GetProgess();
+	if (ImGui::BeginPopupModal("LoadingPopUp", &progress.first, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		ImGui::Text("The mesh is loading");
 		ImGui::Separator();
-		float progress = IOFiles::GetProgess();
-		ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f));
-		if (progress >= 1.f)
-			ImGui::CloseCurrentPopup();
+		auto progress = IOFiles::GetProgess();
+		ImGui::ProgressBar(progress.second);
 		if (ImGui::Button("ok"))
 			ImGui::CloseCurrentPopup();
 

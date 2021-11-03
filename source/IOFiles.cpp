@@ -241,10 +241,10 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 
 			// triangle
 			//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
-			FPoint3 color{ 0.8f, 0.8f, 0.8f };
-			vertices.emplace_back(p0, normal, color);
-			vertices.emplace_back(p1, normal, color);
-			vertices.emplace_back(p2, normal, color);
+			FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
+			vertices.emplace_back(p0, -normal, color);
+			vertices.emplace_back(p1, -normal, color);
+			vertices.emplace_back(p2, -normal, color);
 		}
 	}
 	auto endT = high_resolution_clock::now();

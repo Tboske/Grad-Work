@@ -12,6 +12,8 @@ float4x4	gWorldMatrix	: worldMatrix;
 float4x4	gViewInverse	: viewInverseMatrix;
 
 float3		gLightDirection = float3(0.577f, -0.577f, 0.577f);
+float		gPi = 3.1415927f;
+float		gLightIntensity = 7.f;
 
 
 // ==================================================================================
@@ -39,9 +41,9 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-	float4 Position	: SV_POSITION;
-	float3 Normal	: NORMAL;
-	float3 Color	: COLOR;
+	float4 Position		: SV_POSITION;
+	float3 Normal		: NORMAL;
+	float3 Color		: COLOR;
 };
 
 
@@ -72,6 +74,11 @@ float4 GetObservedArea(float3 normal)
 	observedArea = observedArea * (observedArea > 0.f);
 
 	return float4(observedArea, observedArea, observedArea, 1.f);
+}
+
+float4 Lambert(float3 color, float reflectance)
+{
+	return float4(color * (reflectance / gPi), 1.f);
 }
 
 // ==================================================================================

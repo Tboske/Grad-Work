@@ -114,9 +114,11 @@ void UI::MeshTab() const
 		for (int i = 0; i < meshList.size(); i++)
 		{
 			FMatrix4& transform = meshList[i]->GetTransform();
-			ImGui::PushID(i);
-			ImGui::Text(meshList[i]->GetMeshName().c_str());
-			ImGui::DragFloat3("pos", &transform[3].x, 0.05f, -FLT_MAX, +FLT_MAX);
+			ImGui::PushID(i * 2);
+				ImGui::Text(meshList[i]->GetMeshName().c_str());
+				ImGui::Text("Position: ");
+				ImGui::SameLine();
+				ImGui::DragFloat3("", &transform[3].x, 0.05f, -FLT_MAX, +FLT_MAX);
 			ImGui::PopID();
 		}
 

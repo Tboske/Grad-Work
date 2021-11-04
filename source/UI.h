@@ -3,8 +3,6 @@
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_dx11.h"
 
-struct SDL_Window;
-struct ID3D11DeviceContext;
 class UI final
 {
 public:

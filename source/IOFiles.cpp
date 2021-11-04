@@ -82,6 +82,7 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 {
 	auto inst = GetInstance();
 	inst->m_InProgress = true;
+	inst->m_Progress = 0.f;
 
 	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
 	std::smatch sm{};
@@ -185,8 +186,9 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 	std::string line;
 
 	std::vector<FPoint3> tempVerts;
-	std::vector<IPoint4> tempIndices;
+	std::vector<IPoint3> tempIndices;
 
+	// remove the .vtk extension, so it can open the other files with their specific file extensions
 	std::string newFile{ file.begin(), file.end() - 4 };
 
 	// open vertex position file
@@ -199,12 +201,17 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			size_t vertCount = std::stoi(line);
 			tempVerts.resize(vertCount);
 
-			for (FPoint3& vert : tempVerts)
+			m_Progress = 0.f;
+			for (size_t i = 0; i < tempVerts.size(); ++i)
 			{
+				FPoint3& vert = tempVerts[i];
+
 				myFile >> vert.x >> vert.y >> vert.z;
 				vert.x /= 1000;
 				vert.y /= 1000;
 				vert.z /= 1000;
+
+				m_Progress = float(i) / tempVerts.size();
 			}
 		}
 		myFile.close();
@@ -222,15 +229,21 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 
 			
 			std::string c;
+			m_Progress = 0.f;
 
-			for (auto& index : tempIndices)
+			for (size_t i = 0; i < tempIndices.size(); ++i)
 			{
+				IPoint3& index = tempIndices[i];
+
 				myFile >> c >> index.x >> index.y >> index.z;
+
+				m_Progress = float(i) / tempIndices.size();
 			}
 		}
 		myFile.close();
 
 
+		m_Progress = 0.f;
 		for (uint32_t i = 0; i < tempIndices.size(); ++i)
 		{
 			indices.emplace_back(i * 3);
@@ -253,6 +266,9 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			vertices.emplace_back(p0, -normal, color);
 			vertices.emplace_back(p1, -normal, color);
 			vertices.emplace_back(p2, -normal, color);
+
+
+			m_Progress = float(i) / tempIndices.size();
 		}
 	}
 	auto endT = high_resolution_clock::now();

@@ -118,7 +118,7 @@ void UI::MeshTab() const
 		for (int i = 0; i < meshList.size(); i++)
 		{
 			FMatrix4& transform = meshList[i]->GetTransform();
-			if(ImGui::TreeNode(meshList[i], meshList[i]->GetMeshName().c_str()))
+			if(ImGui::TreeNode((meshList[i]->GetMeshName() + "###" + std::to_string(i)).c_str()))
 			{
 				// Position of the object
 				ImGui::PushID(i * 2); 
@@ -152,15 +152,14 @@ void UI::LoadingPopUp() const
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
 	auto progress = IOFiles::GetProgess();
+	if (progress.first)
+		ImGui::OpenPopup("LoadingPopUp");
+
 	if (ImGui::BeginPopupModal("LoadingPopUp", &progress.first, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		ImGui::Text("The mesh is loading");
 		ImGui::Separator();
-		auto progress = IOFiles::GetProgess();
 		ImGui::ProgressBar(progress.second);
-		if (ImGui::Button("ok"))
-			ImGui::CloseCurrentPopup();
-
 		ImGui::EndPopup();
 	}
 }

@@ -40,6 +40,5 @@ private:
 	void ExportTab();
 	void SettingsTab();
 	void MeshTab() const;
-	void LoadingPopUp() const;
 };
 

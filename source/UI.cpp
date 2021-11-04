@@ -42,10 +42,10 @@ void UI::RenderUI(float height)
 
 	ImGui::Begin("test", NULL, m_WindowFlags);
 	{
-		LoadingPopUp();
+		IOFiles::LoadingPopUp();
 
 		ImGui::SetWindowPos({ 0, 0 });
-		ImGui::SetWindowSize({ 400, height });
+		ImGui::SetWindowSize({ 300, height });
 		if (ImGui::BeginTabBar("Tab"))
 		{
 			ImportTab();
@@ -142,24 +142,5 @@ void UI::MeshTab() const
 		}
 
 		ImGui::EndTabItem();
-	}
-}
-
-void UI::LoadingPopUp() const
-{
-	// Always center this window when appearing
-	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-	auto progress = IOFiles::GetProgess();
-	if (progress.first)
-		ImGui::OpenPopup("LoadingPopUp");
-
-	if (ImGui::BeginPopupModal("LoadingPopUp", &progress.first, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		ImGui::Text("The mesh is loading");
-		ImGui::Separator();
-		ImGui::ProgressBar(progress.second);
-		ImGui::EndPopup();
 	}
 }

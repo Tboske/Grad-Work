@@ -11,9 +11,10 @@ public:
 	~IOFiles();
 	static void Initialize(ID3D11Device* pDevice) { GetInstance()->m_pDevice = pDevice; }
 
-	static std::pair<bool, float> GetProgess() { return { GetInstance()->m_InProgress ,GetInstance()->m_Progress }; }
+	static void LoadingPopUp() { GetInstance()->LoadingPopUpImpl(); }
 	static bool ExportMesh(Mesh* mesh, const std::string& fileName = "ExportedMesh", const std::string& location = "Resources/Export/");
 	static void ImportFile(const std::string& file, std::string name = "", const FPoint3& pos = {0,0,0});
+
 
 private:
 	IOFiles() = default;
@@ -25,7 +26,19 @@ private:
 	void ImportOBJData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
 	void ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
 
-	float m_Progress = 0.f;
-	bool m_InProgress = false;
+	void LoadingPopUpImpl() const;
+	struct Progress
+	{
+		bool active = false;
+		float value = 0.f;
+		std::string description;
+
+		void ResetProgress(const std::string& s) 
+		{
+			value = 0.f;
+			description = s;
+		}
+	};
+	Progress m_Progress;
 };
 

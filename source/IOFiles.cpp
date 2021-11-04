@@ -4,6 +4,7 @@
 #include <regex>
 #include <chrono>
 #include "SceneGraph.h"
+#include "imgui.h"
 
 using namespace std::chrono;
 
@@ -81,8 +82,8 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint3& pos)
 {
 	auto inst = GetInstance();
-	inst->m_InProgress = true;
-	inst->m_Progress = 0.f;
+	inst->m_Progress.active = true;
+	inst->m_Progress.ResetProgress("Start loading in mesh");
 
 	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
 	std::smatch sm{};
@@ -108,7 +109,7 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 			new Mesh(inst->m_pDevice, name, vertices, indices, pos)
 		);
 	}
-	inst->m_InProgress = false;
+	inst->m_Progress.active = false;
 }
 
 void IOFiles::AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index)
@@ -201,7 +202,7 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			size_t vertCount = std::stoi(line);
 			tempVerts.resize(vertCount);
 
-			m_Progress = 0.f;
+			m_Progress.ResetProgress("Importing Vertices");
 			for (size_t i = 0; i < tempVerts.size(); ++i)
 			{
 				FPoint3& vert = tempVerts[i];
@@ -211,7 +212,7 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 				vert.y /= 1000;
 				vert.z /= 1000;
 
-				m_Progress = float(i) / tempVerts.size();
+				m_Progress.value = float(i) / tempVerts.size();
 			}
 		}
 		myFile.close();
@@ -229,7 +230,7 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 
 			
 			std::string c;
-			m_Progress = 0.f;
+			m_Progress.ResetProgress("Importing Indices");
 
 			for (size_t i = 0; i < tempIndices.size(); ++i)
 			{
@@ -237,13 +238,13 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 
 				myFile >> c >> index.x >> index.y >> index.z;
 
-				m_Progress = float(i) / tempIndices.size();
+				m_Progress.value = float(i) / tempIndices.size();
 			}
 		}
 		myFile.close();
 
 
-		m_Progress = 0.f;
+		m_Progress.ResetProgress("Constructing Mesh");
 		for (uint32_t i = 0; i < tempIndices.size(); ++i)
 		{
 			indices.emplace_back(i * 3);
@@ -268,10 +269,30 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			vertices.emplace_back(p2, -normal, color);
 
 
-			m_Progress = float(i) / tempIndices.size();
+			m_Progress.value = float(i) / tempIndices.size();
 		}
 	}
 	auto endT = high_resolution_clock::now();
 	auto exT = duration_cast<seconds>(endT - startT).count();
 	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
+}
+
+void IOFiles::LoadingPopUpImpl() const
+{
+	// Always center this window when appearing
+	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	ImGui::SetNextWindowSize({ 200, 120 });
+
+	if (m_Progress.active)
+		ImGui::OpenPopup("LoadingPopUp");
+
+	if (ImGui::BeginPopupModal("LoadingPopUp", &GetInstance()->m_Progress.active, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text(m_Progress.description.c_str());
+		ImGui::Separator();
+		ImGui::ProgressBar(m_Progress.value);
+
+		ImGui::EndPopup();
+	}
 }

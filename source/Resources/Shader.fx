@@ -96,7 +96,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	const float observedArea = GetObservedArea(input.Normal);
 
 
-	return float4(input.Color, 1.0f) * observedArea;
+	return float4(input.Color, 1.0f)/* * observedArea*/;
 }
 
 
@@ -104,18 +104,16 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 //	        Renders scene to render target
 // ----------------------------------------------------------------------------------
 
-fxgroup Filters
+technique11 Default
 {
-	technique11 Default
+	pass P0
 	{
-		pass P0
-		{
-			SetRasterizerState(gRasterizerState);
-			SetVertexShader(CompileShader(vs_4_0, VS()));
-			SetGeometryShader(NULL);
-			SetPixelShader(CompileShader(ps_4_0, PS()));
-		}
+		SetRasterizerState(gRasterizerState);
+		SetVertexShader(CompileShader(vs_4_0, VS()));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, PS()));
 	}
 }
+
 
 

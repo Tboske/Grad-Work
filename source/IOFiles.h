@@ -25,6 +25,7 @@ private:
 
 	void ImportOBJData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
 	void ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
+	void ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
 
 	void LoadingPopUpImpl() const;
 	struct Progress

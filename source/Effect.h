@@ -21,7 +21,6 @@ private:
 
 	uint32_t m_TechSize = 0;
 	uint32_t m_TechIndex = 0;
-	ID3DX11EffectGroup* m_pTechniqueGroup = nullptr;
 
 	ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile) const;
 };

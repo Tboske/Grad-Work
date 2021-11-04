@@ -23,7 +23,7 @@ private:
 	char m_ImportFile[128]{"testcube"};
 	char m_MeshName[64]{};
 	int m_SelectedFileType = 0;
-	const char* m_pFileTypes[2]{ ".obj", ".vtk" };
+	const char* m_pFileTypes[3]{ ".obj", ".vtk", ".vvtk"};
 	float m_Pos[3] = { 0,0,0 };
 
 	int m_SelectedAlgorithm = 0;

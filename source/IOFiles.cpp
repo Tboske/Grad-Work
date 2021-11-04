@@ -102,6 +102,8 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 			inst->ImportOBJData(importLocation, vertices, indices);
 		else if (sm[2] == "vtk")
 			inst->ImportVTKData(importLocation, vertices, indices);
+		else if (sm[2] == "vvtk")
+			inst->ImportVoxelData(importLocation, vertices, indices);
 		else
 			std::cout << "Unsupported file extension\n";
 
@@ -225,9 +227,6 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			std::getline(myFile, line);
 			size_t indCount = std::stoi(line);
 			tempIndices.resize(indCount);
-			indices.reserve(indCount);
-			vertices.reserve(indCount);
-
 			
 			std::string c;
 			m_Progress.ResetProgress("Importing Indices");
@@ -247,9 +246,12 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 		m_Progress.ResetProgress("Constructing Mesh");
 		for (uint32_t i = 0; i < tempIndices.size(); ++i)
 		{
-			indices.emplace_back(i * 3);
-			indices.emplace_back(i * 3 + 1);
-			indices.emplace_back(i * 3 + 2);
+			constexpr int vertsPerLoop = 3;
+			indices.reserve(tempIndices.size() * vertsPerLoop);
+			vertices.reserve(tempIndices.size() * vertsPerLoop);
+
+			for (size_t j = 0; j < vertsPerLoop; j++)
+				indices.emplace_back(i * vertsPerLoop + j);
 
 			const IPoint4& index = tempIndices[i];
 
@@ -266,6 +268,107 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
 			vertices.emplace_back(p0, -normal, color);
 			vertices.emplace_back(p1, -normal, color);
+			vertices.emplace_back(p2, -normal, color);
+
+
+			m_Progress.value = float(i) / tempIndices.size();
+		}
+	}
+	auto endT = high_resolution_clock::now();
+	auto exT = duration_cast<seconds>(endT - startT).count();
+	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
+}
+
+void IOFiles::ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices)
+{
+	// open file
+	std::ifstream myFile;
+	std::string line;
+
+	std::vector<FPoint3> tempVerts;
+	std::vector<std::pair<int, IPoint4>> tempIndices;
+
+	// remove the .vtk extension, so it can open the other files with their specific file extensions
+	std::string newFile{ file.begin(), file.end() - 5 };
+
+	// open vertex position file
+	auto startT = high_resolution_clock::now();
+	{
+		myFile.open(newFile + ".pts");
+		if (myFile.is_open())
+		{
+			std::getline(myFile, line);
+			size_t vertCount = std::stoi(line);
+			tempVerts.resize(vertCount);
+
+			m_Progress.ResetProgress("Importing Vertices");
+			for (size_t i = 0; i < tempVerts.size(); ++i)
+			{
+				FPoint3& vert = tempVerts[i];
+
+				myFile >> vert.x >> vert.y >> vert.z;
+				vert.x /= 1000;
+				vert.y /= 1000;
+				vert.z /= 1000;
+
+				m_Progress.value = float(i) / tempVerts.size();
+			}
+		}
+		myFile.close();
+	}
+
+	{
+		myFile.open(newFile + ".elem");
+		if (myFile.is_open())
+		{
+			std::getline(myFile, line);
+			size_t indCount = std::stoi(line);
+			tempIndices.resize(indCount);
+
+			std::string c;
+			m_Progress.ResetProgress("Importing Indices");
+
+			for (size_t i = 0; i < tempIndices.size(); ++i)
+			{
+				IPoint4& index = tempIndices[i].second;
+				myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
+
+				m_Progress.value = float(i) / tempIndices.size();
+			}
+		}
+		myFile.close();
+
+
+		m_Progress.ResetProgress("Constructing Mesh");
+		for (uint32_t i = 0; i < tempIndices.size(); ++i)
+		{
+			constexpr int vertsPerLoop = 6;
+			indices.reserve(tempIndices.size() * vertsPerLoop);
+			vertices.reserve(tempIndices.size() * vertsPerLoop);
+
+			for (size_t j = 0; j < vertsPerLoop; j++)
+				indices.emplace_back(i * vertsPerLoop + j);
+
+			const IPoint4& index = tempIndices[i].second;
+
+			const FPoint3& p0 = tempVerts[index.x];
+			const FPoint3& p1 = tempVerts[index.y];
+			const FPoint3& p2 = tempVerts[index.z];
+			const FPoint3& p3 = tempVerts[index.w];
+
+			// normal Calculation
+			FVector3 normal{ Cross(p1 - p0, p2 - p0) };
+			Normalize(normal);
+
+			// triangle
+			//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
+			FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
+			vertices.emplace_back(p0, -normal, color);
+			vertices.emplace_back(p1, -normal, color);
+			vertices.emplace_back(p2, -normal, color);
+			// triangle2
+			vertices.emplace_back(p1, -normal, color);
+			vertices.emplace_back(p3, -normal, color);
 			vertices.emplace_back(p2, -normal, color);
 
 

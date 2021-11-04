@@ -8,10 +8,6 @@ Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
 	: m_pEffect{ LoadEffect(pDevice, assetFile) }
 	, m_TechSize{ 1 }
 {
-	m_pTechniqueGroup = m_pEffect->GetGroupByName("Filters");
-	if (!m_pTechniqueGroup->IsValid())
-		std::wcout << L"m_pTechniqueGroup not valid\n";
-
 	m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
 	if (!m_pMatWorldViewProjVariable->IsValid())
 		std::wcout << L"m_pMatWorldViewProjVariable not valid\n";
@@ -34,9 +30,6 @@ Effect::~Effect()
 	m_pMatViewInverse->Release();
 	m_pMatViewInverse = nullptr;
 
-	m_pTechniqueGroup->Release();
-	m_pTechniqueGroup = nullptr;
-
 	m_pEffect->Release();
 	m_pEffect = nullptr;
 }
@@ -48,7 +41,7 @@ ID3DX11Effect* Effect::GetEffect() const
 
 ID3DX11EffectTechnique* Effect::GetTechnique() const
 {
-	return m_pTechniqueGroup->GetTechniqueByIndex(m_TechIndex);
+	return m_pEffect->GetTechniqueByIndex(m_TechIndex);
 }
 
 void Effect::UpdateMatrix(const Elite::FMatrix4& transform)

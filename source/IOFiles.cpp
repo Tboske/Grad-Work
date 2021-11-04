@@ -2,12 +2,8 @@
 #include "IOFiles.h"
 #include <fstream>
 #include <regex>
-#include <chrono>
 #include "SceneGraph.h"
 #include "imgui.h"
-
-using namespace std::chrono;
-
 
 IOFiles::~IOFiles()
 {
@@ -82,8 +78,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint3& pos)
 {
 	auto inst = GetInstance();
-	inst->m_Progress.active = true;
-	inst->m_Progress.ResetProgress("Start loading in mesh");
+	inst->m_Progress.Start("Start loading in Mesh");
 
 	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
 	std::smatch sm{};
@@ -385,7 +380,7 @@ void IOFiles::LoadingPopUpImpl() const
 	// Always center this window when appearing
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize({ 200, 120 });
+	ImGui::SetNextWindowSize({ 200, 95 });
 
 	if (m_Progress.active)
 		ImGui::OpenPopup("LoadingPopUp");
@@ -395,6 +390,9 @@ void IOFiles::LoadingPopUpImpl() const
 		ImGui::Text(m_Progress.description.c_str());
 		ImGui::Separator();
 		ImGui::ProgressBar(m_Progress.value);
+
+		auto elapsed = duration_cast<seconds>(high_resolution_clock::now() - m_Progress.startTime).count();
+		ImGui::Text(std::string{ "Elapsed time: " + std::to_string(elapsed) + "s" }.c_str());
 
 		ImGui::EndPopup();
 	}

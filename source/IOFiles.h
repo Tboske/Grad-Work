@@ -1,9 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <chrono>
 #include "Mesh.h"
 
 using namespace Elite;
+using namespace std::chrono;
 
 class IOFiles final
 {
@@ -33,7 +35,14 @@ private:
 		bool active = false;
 		float value = 0.f;
 		std::string description;
+		steady_clock::time_point startTime;
 
+		void Start(const std::string& s) 
+		{ 
+			active = true;
+			startTime = high_resolution_clock::now();
+			ResetProgress(s);
+		}
 		void ResetProgress(const std::string& s) 
 		{
 			value = 0.f;

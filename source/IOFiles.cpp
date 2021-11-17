@@ -89,26 +89,19 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 
 	if (std::regex_match(importLocation, sm, fileType))
 	{
-		std::vector<Mesh::Vertex_Input> vertices;
-		std::vector<uint32_t> indices;
-
 		if (name.empty())
 			name = sm[1];
 
 		if (sm[2] == "obj")
-			inst->ImportOBJData(importLocation, vertices, indices);
+			inst->ImportOBJData(importLocation, name, pos);
 		else if (sm[2] == "vtk")
-			inst->ImportVTKData(importLocation, vertices, indices);
+			inst->ImportVTKData(importLocation, name, pos);
 	/*	else if (sm[2] == "vvtk")
 			inst->ImportVoxelData(importLocation, vertices, indices);*/
-		//else if (sm[2] == "var")
-		//	inst->ImportIthildinFile(importLocation, vertices, indices);
+		else if (sm[2] == "var")
+			inst->ImportIthildinFile(importLocation, name, pos);
 		else
 			std::cout << "Unsupported file extension\n";
-
-		SceneGraph::GetInstance()->AddMesh(
-			new Mesh(inst->m_pDevice, name, vertices, indices, pos)
-		);
 	}
 	inst->m_Progress.active = false;
 }
@@ -130,8 +123,11 @@ void IOFiles::AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint
 
 }
 
-void IOFiles::ImportOBJData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices)
+void IOFiles::ImportOBJData(const std::string& file, const std::string& fileName, const FPoint3& pos)
 {
+	std::vector<Mesh::Vertex_Input> vertices;
+	std::vector<uint32_t> indices;
+
 	// open file
 	std::ifstream myFile;
 
@@ -179,10 +175,17 @@ void IOFiles::ImportOBJData(const std::string& file, std::vector<Mesh::Vertex_In
 		const IPoint3& index = tempIndices[i];
 		vertices.push_back(Mesh::Vertex_Input(tempVerts[index.x], tempNormals[index.z]));
 	}
+
+	SceneGraph::GetInstance()->AddObject(
+		new Mesh(m_pDevice, fileName, vertices, indices, pos)
+	);
 }
 
-void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices)
+void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName, const FPoint3& pos)
 {
+	std::vector<Mesh::Vertex_Input> vertices;
+	std::vector<uint32_t> indices;
+
 	// open file
 	std::ifstream myFile;
 	std::string line;
@@ -285,10 +288,18 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 	auto endT = high_resolution_clock::now();
 	auto exT = duration_cast<seconds>(endT - startT).count();
 	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
+
+
+	SceneGraph::GetInstance()->AddObject(
+		new Mesh(m_pDevice, fileName, vertices, indices, pos)
+	);
 }
 
-void IOFiles::ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices)
+void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileName, const FPoint3& pos)
 {
+	std::vector<Mesh::Vertex_Input> vertices;
+	std::vector<uint32_t> indices;
+
 	// open file
 	std::ifstream myFile;
 	std::string line;
@@ -388,86 +399,112 @@ void IOFiles::ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_
 	auto endT = high_resolution_clock::now();
 	auto exT = duration_cast<seconds>(endT - startT).count();
 	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
+
+	SceneGraph::GetInstance()->AddObject(
+		new Mesh(m_pDevice, fileName, vertices, indices, pos)
+	);
 }
 
-//void IOFiles::ImportIthildinFile(const std::string& file, std::vector<Mesh::Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices)
-//{
-//	std::vector<int> order;
-//	std::vector<float> data;
-//
-//	std::ifstream f;
-//	f.open(file);
-//	if (f.is_open())
-//	{
-//		uint32_t nDim;
-//		std::vector<uint32_t> shape;
-//		float frameDur;
-//		{	// read var file header
-//			uint32_t nfr, bytesPerData;
-//			std::vector<uint32_t> dimli;
-//
-//			f.read((char*)&nDim, sizeof(uint32_t));
-//			dimli.resize(nDim);
-//			for (uint32_t i = 0; i < nDim; i++)
-//				f.read((char*)&dimli[i], sizeof(uint32_t));
-//			f.read((char*)&nfr, sizeof(uint32_t));
-//			f.read((char*)&bytesPerData, sizeof(uint32_t));
-//			f.read((char*)&frameDur, sizeof(float));
-//			if (bytesPerData != 4)
-//			{
-//				std::cout << "BytesPerData is not 4\n";
-//				return;
-//			}
-//
-//			if (dimli.size() < 3)
-//				dimli.resize(3, 1);
-//			shape.reserve(dimli.size() + 1);
-//			shape = std::move(dimli);
-//			shape.push_back(nfr);
-//
-//			std::reverse(shape.begin(), shape.end());
-//
-//			for (int i : shape)
-//			{
-//				if (i <= 0)
-//				{
-//					std::cout << "Dimensions must be greater than 0";
-//					return;
-//				}
-//			}
-//		}
-//
-//		// read all information in data
-//		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
-//		data.resize(product);
-//		f.read((char*)data.data(), product);
-//
-//		order.reserve(shape.size() + 1);
-//		order.push_back(0);
-//		for (size_t i = shape.size() - 1; i >= 1; --i)
-//			order.push_back(uint32_t(i));
-//			
-//		// it is possible that data is too short
-//		uint32_t nfr = uint32_t(std::floorf(float(data.size()) / std::accumulate(shape.cbegin() + 1, shape.cend(), 1, std::multiplies<int>())));
-//		if (nfr < shape[0])
-//			std::cout << "Not all frames recorded in varfile.\n";
-//		else
-//			assert(nfr == shape[0]);
-//		shape[0] = nfr;
-//
-//		// check if last frame is corrupt
-//		if (data.size() > product)
-//		{
-//			std::cout << "Part of the last frame is missing! Frame skipped.";
-//		}
-//
-//		//reshape data
-//
-//
-//
-//		f.close();
-//	}
-//}
+void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fileName, const FPoint3& pos)
+{
+	std::vector<float> data;
+	std::vector<uint32_t> shape;
+
+	std::ifstream f;
+	auto startT = high_resolution_clock::now();
+
+	f.open(file);
+	if (f.is_open())
+	{
+		uint32_t nDim;
+		float frameDur;
+		{
+			uint32_t nfr, bytesPerData;
+
+			f.read((char*)&nDim, sizeof(uint32_t));
+			shape.resize(nDim);
+			for (uint32_t i = 0; i < nDim; i++)
+				f.read((char*)&shape[i], sizeof(uint32_t));
+			f.read((char*)&nfr, sizeof(uint32_t));
+			f.read((char*)&bytesPerData, sizeof(uint32_t));
+			if (bytesPerData != 4)
+			{
+				std::cout << "BytesPerData is not 4\n";
+				return;
+			}
+			f.read((char*)&frameDur, sizeof(float));
+
+			if (shape.size() < 3)	// if the size is smaller, resize the vector to 3 size;
+				shape.resize(3, 1);
+			// add the nfr to this vector
+			shape.push_back(nfr);
+			std::reverse(shape.begin(), shape.end());
+
+			for (uint32_t i : shape)
+			{
+				if (i <= 0)
+				{
+					std::cout << "Dimensions must be greater than 0";
+					return;
+				}
+			}
+		}
+		
+		// read all information in data
+		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
+		data.resize(product);
+		f.read((char*)data.data(), product);
+
+		// it is possible that data is too short
+		const uint32_t nfr = uint32_t(std::floorf(float(data.size()) / std::accumulate(shape.cbegin() + 1, shape.cend(), 1, std::multiplies<int>())));
+		if (nfr < shape[0])
+			std::cout << "Not all frames recorded in varfile.\n";
+		else
+			assert(nfr == shape[0]);
+		shape[0] = nfr;
+
+		// check if last frame is corrupt
+		if (data.size() > product)
+			std::cout << "Part of the last frame is missing! Frame skipped.";
+
+		f.close();
+	}
+
+	// everything containing the rubbish value is not a piece of the pointcloud
+	float rubbishVal = data[0];
+	std::vector<IPoint3> pointcloud;
+	pointcloud.reserve(data.size());
+
+	m_Progress.ResetProgress("Extracting voxel data");
+	for (uint32_t t = 0; t < shape[0]; ++t)
+	{
+		for (uint32_t z = 0; z < shape[1]; ++z)
+		{
+			for (uint32_t y = 0; y < shape[2]; ++y)
+			{
+				for (uint32_t x = 0; x < shape[3]; ++x)
+				{
+					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
+					float& val = data[p];
+
+					if (val != rubbishVal)
+						pointcloud.emplace_back(x, y, z);
+
+					m_Progress.value = float(p) / data.size();
+				}
+			}
+		}
+	}
+	auto endT = high_resolution_clock::now();
+	auto exT = duration_cast<milliseconds>(endT - startT).count();
+	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " milliseconds\n";
+
+
+	// create mesh
+	//SceneGraph::GetInstance()->AddObject(
+	//	new PointCloud(m_pDevice, fileName, vertices, pos)
+	//);
+}
 
 void IOFiles::LoadingPopUpImpl() const
 {

@@ -25,10 +25,10 @@ private:
 
 	void AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index);
 
-	void ImportOBJData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
-	void ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
-	void ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices);
-	//void ImportIthildinFile(const std::string& file, std::vector<Mesh::Mesh::Vertex_Input>& vertices, std::vector <uint32_t>& indices);
+	void ImportOBJData(const std::string& file, const std::string& fileName, const FPoint3& pos);
+	void ImportVTKData(const std::string& file, const std::string& fileName, const FPoint3& pos);
+	void ImportVoxelData(const std::string& file, const std::string& fileName, const FPoint3& pos);
+	void ImportIthildinFile(const std::string& file, const std::string& fileName, const FPoint3& pos);
 
 
 	void LoadingPopUpImpl() const;

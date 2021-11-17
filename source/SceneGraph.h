@@ -13,7 +13,7 @@ public:
 	static SceneGraph* GetInstance();
 
 	// Setters and Adders
-	void AddMesh(Mesh* pMesh);
+	void AddObject(Mesh* pMesh);
 	void SetCamera(Camera* pCamera);
 	void AddTexture(const std::string& name, Texture* pTexture);
 

@@ -26,7 +26,7 @@ SceneGraph* SceneGraph::GetInstance()
 	return pInstance;
 }
 
-void SceneGraph::AddMesh(Mesh* pMesh)
+void SceneGraph::AddObject(Mesh* pMesh)
 {
 	m_pMeshes.push_back(pMesh);
 }

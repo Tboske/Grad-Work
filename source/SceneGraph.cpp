@@ -4,7 +4,7 @@
 SceneGraph::~SceneGraph()
 {
 	// cleanup meshes
-	for (auto& i : m_pMeshes)
+	for (auto& i : m_pObjects)
 	{
 		delete i;
 		i = nullptr;
@@ -26,9 +26,9 @@ SceneGraph* SceneGraph::GetInstance()
 	return pInstance;
 }
 
-void SceneGraph::AddObject(Mesh* pMesh)
+void SceneGraph::AddObject(BaseObject* pMesh)
 {
-	m_pMeshes.push_back(pMesh);
+	m_pObjects.push_back(pMesh);
 }
 
 void SceneGraph::SetCamera(Camera* pCamera)
@@ -42,9 +42,9 @@ void SceneGraph::AddTexture(const std::string& name, Texture* pTexture)
 	m_pTextures[name] = pTexture;
 }
 
-const std::vector<Mesh*>& SceneGraph::GetMeshes() const
+const std::vector<BaseObject*>& SceneGraph::GetObjects() const
 {
-	return m_pMeshes;
+	return m_pObjects;
 }
 
 Camera* SceneGraph::GetCamera() const
@@ -63,7 +63,7 @@ Texture* SceneGraph::GetTexture(const std::string& name) const
 }
 
 SceneGraph::SceneGraph()
-	: m_pMeshes{ }
+	: m_pObjects{ }
 	, m_pCamera{ nullptr }
 {
 }

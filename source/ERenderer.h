@@ -8,7 +8,7 @@
 #define	ELITE_RAYTRACING_RENDERER
 
 #include <cstdint>
-#include "Mesh.h"
+#include "Objects.h"
 #include "UI.h"
 
 struct SDL_Window;
@@ -35,6 +35,8 @@ namespace Elite
 		SDL_Window* m_pWindow;
 		uint32_t m_Width;
 		uint32_t m_Height;
+
+		const RGBColor m_ClearBufferColor{ 0.1f, 0.1f, 0.1f };
 
 		bool m_IsInitialized;
 

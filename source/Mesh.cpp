@@ -3,18 +3,10 @@
 #include "IOFiles.h"
 #include "SceneGraph.h"
 
-Mesh::Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const Elite::FPoint3& pos)
-	: m_pEffect{ new Effect(pDevice, L"Resources/Shader.fx")}
-	, m_Transform{ Elite::FMatrix4::Identity() }
-	, m_MeshName{ meshName }
+Mesh::Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const FPoint3& pos)
+	: BaseObject(pDevice, meshName, pos, L"Resources/Shader.fx")
 {
 	Initialize(pDevice, vertices, indices);
-
-	// world matrix
-	m_Transform[3].xyz = FVector3(pos);
-
-	if (m_MeshName.empty())
-		m_MeshName = "Default";
 }
 
 Mesh::~Mesh()
@@ -27,14 +19,11 @@ Mesh::~Mesh()
 
 	m_pVertexLayout->Release();
 	m_pVertexLayout = nullptr;
-
-	delete m_pEffect;
-	m_pEffect = nullptr;
 }
 
 void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 {
-	m_pEffect->UpdateMatrix(m_Transform);
+	BaseObject::Render(pDeviceContext);
 
 	// Set vertex buffer
 	UINT stride = sizeof(Vertex_Input);

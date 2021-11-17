@@ -472,7 +472,7 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 
 	// everything containing the rubbish value is not a piece of the pointcloud
 	float rubbishVal = data[0];
-	std::vector<IPoint3> pointcloud;
+	std::vector<FPoint3> pointcloud;
 	pointcloud.reserve(data.size());
 
 	m_Progress.ResetProgress("Extracting voxel data");
@@ -487,8 +487,8 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
 					float& val = data[p];
 
-					if (val != rubbishVal)
-						pointcloud.emplace_back(x, y, z);
+					if (val <= rubbishVal)
+						pointcloud.emplace_back(float(x), float(y), float(z));
 
 					m_Progress.value = float(p) / data.size();
 				}
@@ -501,9 +501,9 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 
 
 	// create mesh
-	//SceneGraph::GetInstance()->AddObject(
-	//	new PointCloud(m_pDevice, fileName, vertices, pos)
-	//);
+	SceneGraph::GetInstance()->AddObject(
+		new PointCloud(m_pDevice, fileName, pointcloud, pos)
+	);
 }
 
 void IOFiles::LoadingPopUpImpl() const

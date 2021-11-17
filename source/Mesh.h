@@ -1,11 +1,11 @@
 #pragma once
-#include <vector>
+#include "BaseObject.h"
 #include "Texture.h"
 #include "Effect.h"
 
 using namespace Elite;
 
-class Mesh final
+class Mesh final : public BaseObject
 {
 public:
 	struct Vertex_Input
@@ -22,30 +22,20 @@ public:
 		FPoint3 Color;
 	};
 
-	Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const Elite::FPoint3& pos = {0,0,0});
+	Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const FPoint3& pos = { 0,0,0 });
 	~Mesh();
 
 	const std::vector<Vertex_Input>& GetVertexData() const { return m_Vertices; }
-	const std::vector<uint32_t>& GetIndexData() const { return m_Indices; }
-	FMatrix4& GetTransform() { return m_Transform; }
-	std::string GetMeshName() const { return m_MeshName; }
 
-	void Render(ID3D11DeviceContext* pDeviceContext) const;
-	void Update();
+	virtual void Render(ID3D11DeviceContext* pDeviceContext) const override;
+	virtual void Update() override;
 
 private:
-	Effect* m_pEffect = nullptr;
 	ID3D11InputLayout* m_pVertexLayout = nullptr;
 	ID3D11Buffer* m_pVertexBuffer = nullptr;
 	ID3D11Buffer* m_pIndexBuffer = nullptr;
 	std::vector<Vertex_Input> m_Vertices;
 	std::vector<uint32_t> m_Indices;
-
-
-	Elite::FMatrix4 m_Transform;
-	std::string m_MeshName;
-
-	bool m_KeyIsPressed;
 
 	HRESULT Initialize(ID3D11Device* pDevice, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices);
 };

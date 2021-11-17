@@ -93,7 +93,7 @@ void UI::ExportTab()
 		ImGui::InputTextWithHint("Location", "Enter location to export to", m_ExportLocation, IM_ARRAYSIZE(m_ExportLocation));
 		ImGui::TextColored({ 1,0,0,1 }, "Include the extension!");
 		if (ImGui::Button("Export!", { -1, 25 }))
-			IOFiles::ExportMesh(SceneGraph::GetInstance()->GetMeshes()[0], m_ExportLocation);
+			IOFiles::ExportMesh((Mesh*)SceneGraph::GetInstance()->GetObjects()[0], m_ExportLocation);
 
 		ImGui::EndTabItem();
 	}
@@ -114,7 +114,7 @@ void UI::MeshTab() const
 {
 	if (ImGui::BeginTabItem("MeshTab"))
 	{
-		auto& meshList = SceneGraph::GetInstance()->GetMeshes();
+		auto& meshList = SceneGraph::GetInstance()->GetObjects();
 		for (int i = 0; i < meshList.size(); i++)
 		{
 			FMatrix4& transform = meshList[i]->GetTransform();

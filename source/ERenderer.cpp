@@ -44,13 +44,12 @@ void Elite::Renderer::Render()
 		return;
 
 	// Clear Buffers
-	static const RGBColor clearColor = RGBColor(0.5f, 0.75f, 0.75f);
-	m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, &clearColor.r);
+	m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, &m_ClearBufferColor.r);
 	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 
 	// Render
-	for (Mesh* pMesh : SceneGraph::GetInstance()->GetMeshes())
+	for (BaseObject* pMesh : SceneGraph::GetInstance()->GetObjects())
 	{
 		pMesh->Update();
 		pMesh->Render(m_pDeviceContext);

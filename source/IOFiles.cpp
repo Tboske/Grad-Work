@@ -4,6 +4,8 @@
 #include <regex>
 #include "SceneGraph.h"
 #include "imgui.h"
+#include <algorithm>
+#include <numeric>
 
 IOFiles::~IOFiles()
 {
@@ -97,8 +99,10 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 			inst->ImportOBJData(importLocation, vertices, indices);
 		else if (sm[2] == "vtk")
 			inst->ImportVTKData(importLocation, vertices, indices);
-		else if (sm[2] == "vvtk")
-			inst->ImportVoxelData(importLocation, vertices, indices);
+	/*	else if (sm[2] == "vvtk")
+			inst->ImportVoxelData(importLocation, vertices, indices);*/
+		//else if (sm[2] == "var")
+		//	inst->ImportIthildinFile(importLocation, vertices, indices);
 		else
 			std::cout << "Unsupported file extension\n";
 
@@ -219,20 +223,29 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 		myFile.open(newFile + ".surf");
 		if (myFile.is_open())
 		{
-			std::getline(myFile, line);
-			size_t indCount = std::stoi(line);
-			tempIndices.resize(indCount);
-			
-			std::string c;
-			m_Progress.ResetProgress("Importing Indices");
-
-			for (size_t i = 0; i < tempIndices.size(); ++i)
+			while (std::getline(myFile, line))
 			{
-				IPoint3& index = tempIndices[i];
+				if (line.empty()) // check to see if it failed to insert the next line
+				{
+					std::getline(myFile, line);
+					if (line.empty()) // if still no line found, break out of the loop
+						break;
+				}
 
-				myFile >> c >> index.x >> index.y >> index.z;
+				size_t indCount = std::stoi(line);
+				tempIndices.reserve(tempIndices.size() + indCount);
 
-				m_Progress.value = float(i) / tempIndices.size();
+				std::string c;
+				m_Progress.ResetProgress("Importing Indices");
+
+				for (size_t i = 0; i < indCount; ++i)
+				{
+					IPoint3 index{};
+					myFile >> c >> index.x >> index.y >> index.z;
+					tempIndices.push_back(index);
+
+					m_Progress.value = float(i) / tempIndices.size();
+				}
 			}
 		}
 		myFile.close();
@@ -246,7 +259,7 @@ void IOFiles::ImportVTKData(const std::string& file, std::vector<Mesh::Vertex_In
 			vertices.reserve(tempIndices.size() * vertsPerLoop);
 
 			for (size_t j = 0; j < vertsPerLoop; j++)
-				indices.emplace_back(i * vertsPerLoop + j);
+				indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
 
 			const IPoint4& index = tempIndices[i];
 
@@ -316,19 +329,21 @@ void IOFiles::ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_
 		myFile.open(newFile + ".elem");
 		if (myFile.is_open())
 		{
-			std::getline(myFile, line);
-			size_t indCount = std::stoi(line);
-			tempIndices.resize(indCount);
-
-			std::string c;
-			m_Progress.ResetProgress("Importing Indices");
-
-			for (size_t i = 0; i < tempIndices.size(); ++i)
+			while (std::getline(myFile, line))
 			{
-				IPoint4& index = tempIndices[i].second;
-				myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
+				size_t indCount = std::stoi(line);
+				tempIndices.resize(indCount);
 
-				m_Progress.value = float(i) / tempIndices.size();
+				std::string c;
+				m_Progress.ResetProgress("Importing Indices");
+
+				for (size_t i = 0; i < tempIndices.size(); ++i)
+				{
+					IPoint4& index = tempIndices[i].second;
+					myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
+
+					m_Progress.value = float(i) / tempIndices.size();
+				}
 			}
 		}
 		myFile.close();
@@ -342,7 +357,7 @@ void IOFiles::ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_
 			vertices.reserve(tempIndices.size() * vertsPerLoop);
 
 			for (size_t j = 0; j < vertsPerLoop; j++)
-				indices.emplace_back(i * vertsPerLoop + j);
+				indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
 
 			const IPoint4& index = tempIndices[i].second;
 
@@ -374,6 +389,85 @@ void IOFiles::ImportVoxelData(const std::string& file, std::vector<Mesh::Vertex_
 	auto exT = duration_cast<seconds>(endT - startT).count();
 	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
 }
+
+//void IOFiles::ImportIthildinFile(const std::string& file, std::vector<Mesh::Mesh::Vertex_Input>& vertices, std::vector<uint32_t>& indices)
+//{
+//	std::vector<int> order;
+//	std::vector<float> data;
+//
+//	std::ifstream f;
+//	f.open(file);
+//	if (f.is_open())
+//	{
+//		uint32_t nDim;
+//		std::vector<uint32_t> shape;
+//		float frameDur;
+//		{	// read var file header
+//			uint32_t nfr, bytesPerData;
+//			std::vector<uint32_t> dimli;
+//
+//			f.read((char*)&nDim, sizeof(uint32_t));
+//			dimli.resize(nDim);
+//			for (uint32_t i = 0; i < nDim; i++)
+//				f.read((char*)&dimli[i], sizeof(uint32_t));
+//			f.read((char*)&nfr, sizeof(uint32_t));
+//			f.read((char*)&bytesPerData, sizeof(uint32_t));
+//			f.read((char*)&frameDur, sizeof(float));
+//			if (bytesPerData != 4)
+//			{
+//				std::cout << "BytesPerData is not 4\n";
+//				return;
+//			}
+//
+//			if (dimli.size() < 3)
+//				dimli.resize(3, 1);
+//			shape.reserve(dimli.size() + 1);
+//			shape = std::move(dimli);
+//			shape.push_back(nfr);
+//
+//			std::reverse(shape.begin(), shape.end());
+//
+//			for (int i : shape)
+//			{
+//				if (i <= 0)
+//				{
+//					std::cout << "Dimensions must be greater than 0";
+//					return;
+//				}
+//			}
+//		}
+//
+//		// read all information in data
+//		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
+//		data.resize(product);
+//		f.read((char*)data.data(), product);
+//
+//		order.reserve(shape.size() + 1);
+//		order.push_back(0);
+//		for (size_t i = shape.size() - 1; i >= 1; --i)
+//			order.push_back(uint32_t(i));
+//			
+//		// it is possible that data is too short
+//		uint32_t nfr = uint32_t(std::floorf(float(data.size()) / std::accumulate(shape.cbegin() + 1, shape.cend(), 1, std::multiplies<int>())));
+//		if (nfr < shape[0])
+//			std::cout << "Not all frames recorded in varfile.\n";
+//		else
+//			assert(nfr == shape[0]);
+//		shape[0] = nfr;
+//
+//		// check if last frame is corrupt
+//		if (data.size() > product)
+//		{
+//			std::cout << "Part of the last frame is missing! Frame skipped.";
+//		}
+//
+//		//reshape data
+//
+//
+//
+//		f.close();
+//	}
+//}
 
 void IOFiles::LoadingPopUpImpl() const
 {

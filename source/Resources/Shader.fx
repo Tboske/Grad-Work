@@ -96,7 +96,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	const float observedArea = GetObservedArea(input.Normal);
 
 
-	return float4(input.Color, 1.0f)/* * observedArea*/;
+    return float4(abs(input.Color), 1.0f)  * observedArea;
 }
 
 

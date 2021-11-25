@@ -53,7 +53,7 @@ int main(int argc, char* args[])
 
 	// Initialize SceneGraph
 	SceneGraph* scene = SceneGraph::GetInstance();
-	scene->SetCamera(new Camera(Elite::FPoint3(0.f, 10.f, 100.f), Elite::FVector3(0.f, 0.f, 1.f), (float)width / (float)height, 60.f, 0.1f, 10000.f)); // in degrees
+	scene->SetCamera(new Camera(Elite::FPoint3(0.f, 10.f, 100.f), Elite::FVector3(0.f, 0.f, 1.f), (float)width / (float)height, 90.f, 0.1f, 10000.f)); // in degrees
 
 	// add textures
 	//scene->AddTexture("UVGrid", new Texture(pRenderer->GetDevice(), "Resources/uv_grid_2.png"));

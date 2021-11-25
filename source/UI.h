@@ -20,7 +20,7 @@ private:
 		ImGuiWindowFlags_NoCollapse 
 	};
 
-	char m_ImportFile[128]{"PDS_30_v"};
+	char m_ImportFile[128]{"test2"};
 	char m_MeshName[64]{};
 	int m_SelectedFileType = 3;
 	const char* m_pFileTypes[4]{ ".obj", ".vtk", ".vvtk", ".var"};

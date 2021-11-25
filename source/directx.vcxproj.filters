@@ -133,6 +133,12 @@
     <ClInclude Include="Objects.h">
       <Filter>Engine\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="MarchingCubes.h">
+      <Filter>Mesh Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="MarchTable.h">
+      <Filter>Mesh Generation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ERenderer.cpp">
@@ -194,6 +200,9 @@
     </ClCompile>
     <ClCompile Include="BaseObject.cpp">
       <Filter>Engine\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="MarchingCubes.cpp">
+      <Filter>Mesh Generation</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

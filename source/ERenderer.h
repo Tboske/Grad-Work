@@ -36,8 +36,6 @@ namespace Elite
 		uint32_t m_Width;
 		uint32_t m_Height;
 
-		const RGBColor m_ClearBufferColor{ 0.1f, 0.1f, 0.1f };
-
 		bool m_IsInitialized;
 
 		// DirectX information

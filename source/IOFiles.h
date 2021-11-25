@@ -29,7 +29,7 @@ private:
 	void ImportVTKData(const std::string& file, const std::string& fileName, const FPoint3& pos);
 	void ImportVoxelData(const std::string& file, const std::string& fileName, const FPoint3& pos);
 	void ImportIthildinFile(const std::string& file, const std::string& fileName, const FPoint3& pos);
-
+	void ReadVarHeader(std::ifstream& f, std::vector<uint32_t>& shape) const;
 
 	void LoadingPopUpImpl() const;
 	struct Progress

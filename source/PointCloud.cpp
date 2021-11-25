@@ -3,11 +3,43 @@
 #include "IOFiles.h"
 #include "SceneGraph.h"
 
-PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<FPoint3>& pointCloud, const FPoint3& pos)
+PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<std::vector<std::vector<float>>>& pointCloud, const FPoint3& pos)
 	: BaseObject(pDevice, meshName, pos, L"Resources/PointShader.fx")
+	, m_PointCloud{ pointCloud }
 {
-	Initialize(pDevice, pointCloud);
+	// everything containing the rubbish value is not a piece of the pointcloud
+	float rubbishVal{ pointCloud[0][0][0] };
+	m_RenderPoints.reserve(pointCloud.size());
+
+	const uint32_t zSize = pointCloud.size();
+	const uint32_t ySize = pointCloud[0].size();
+	const uint32_t xSize = pointCloud[0][0].size();
+
+	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
+	{
+		for (uint32_t z = 0; z < zSize; ++z)
+		{
+			for (uint32_t y = 0; y < ySize; ++y)
+			{
+				for (uint32_t x = 0; x < xSize; ++x)
+				{
+					// this calculates the 1d array position
+					float val = m_PointCloud[z][y][x];
+
+					// if the coordinate has a lower value then the rubbish value, dont add it to the pointcloud
+					if (val <= rubbishVal)
+						continue;
+
+					m_RenderPoints.emplace_back(float(x), float(y), float(z));
+				}
+			}
+		}
+	}
+
+	Initialize(pDevice);
 }
+
+
 
 PointCloud::~PointCloud()
 {
@@ -51,9 +83,9 @@ void PointCloud::Update()
 {
 }
 
-HRESULT PointCloud::Initialize(ID3D11Device* pDevice, const std::vector<FPoint3>& pointCloud)
+HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 {
-	m_VertexCount = UINT(pointCloud.size());
+	m_VertexCount = UINT(m_RenderPoints.size());
 
 	// Create Vertex Layout
 	HRESULT result = S_OK;
@@ -78,12 +110,12 @@ HRESULT PointCloud::Initialize(ID3D11Device* pDevice, const std::vector<FPoint3>
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_IMMUTABLE;
-	bd.ByteWidth = sizeof(FPoint3) * (uint32_t)pointCloud.size();
+	bd.ByteWidth = sizeof(FPoint3) * (uint32_t)m_RenderPoints.size();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	bd.MiscFlags = 0;
 	D3D11_SUBRESOURCE_DATA initData = { 0 };
-	initData.pSysMem = pointCloud.data();
+	initData.pSysMem = m_RenderPoints.data();
 	result = pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 	if (FAILED(result))
 		return result;

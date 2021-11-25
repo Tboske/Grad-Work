@@ -407,7 +407,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 
 void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fileName, const FPoint3& pos)
 {
-	std::vector<float> data;
+	std::vector<std::vector<std::vector<float>>> data;
 	std::vector<uint32_t> shape;
 
 	std::ifstream f;
@@ -416,44 +416,25 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 	f.open(file);
 	if (f.is_open())
 	{
-		uint32_t nDim;
-		float frameDur;
-		{
-			uint32_t nfr, bytesPerData;
+					std::streampos fsizestart = 0;
+					fsizestart = f.tellg();
+					f.seekg(0, std::ios::end);
+					fsizestart = f.tellg() - fsizestart;
+					f.seekg(0);
 
-			f.read((char*)&nDim, sizeof(uint32_t));
-			shape.resize(nDim);
-			for (uint32_t i = 0; i < nDim; i++)
-				f.read((char*)&shape[i], sizeof(uint32_t));
-			f.read((char*)&nfr, sizeof(uint32_t));
-			f.read((char*)&bytesPerData, sizeof(uint32_t));
-			if (bytesPerData != 4)
-			{
-				std::cout << "BytesPerData is not 4\n";
-				return;
-			}
-			f.read((char*)&frameDur, sizeof(float));
-
-			if (shape.size() < 3)	// if the size is smaller, resize the vector to 3 size;
-				shape.resize(3, 1);
-			// add the nfr to this vector
-			shape.push_back(nfr);
-			std::reverse(shape.begin(), shape.end());
-
-			for (uint32_t i : shape)
-			{
-				if (i <= 0)
-				{
-					std::cout << "Dimensions must be greater than 0";
-					return;
-				}
-			}
-		}
+		ReadVarHeader(f, shape);
 		
 		// read all information in data
 		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
-		data.resize(product);
-		f.read((char*)data.data(), product);
+
+		// initializes the vector with the proper sizes
+		data = std::vector<std::vector<std::vector<float>>>(
+			shape[1], std::vector<std::vector<float>>(
+			shape[2], std::vector<float>(
+			shape[3]))
+		);
+
+		f.read((char*)data[0][0].data(), product);
 
 		// it is possible that data is too short
 		const uint32_t nfr = uint32_t(std::floorf(float(data.size()) / std::accumulate(shape.cbegin() + 1, shape.cend(), 1, std::multiplies<int>())));
@@ -470,40 +451,45 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 		f.close();
 	}
 
-	// everything containing the rubbish value is not a piece of the pointcloud
-	float rubbishVal = data[0];
-	std::vector<FPoint3> pointcloud;
-	pointcloud.reserve(data.size());
-
-	m_Progress.ResetProgress("Extracting voxel data");
-	for (uint32_t t = 0; t < shape[0]; ++t)
-	{
-		for (uint32_t z = 0; z < shape[1]; ++z)
-		{
-			for (uint32_t y = 0; y < shape[2]; ++y)
-			{
-				for (uint32_t x = 0; x < shape[3]; ++x)
-				{
-					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
-					float& val = data[p];
-
-					if (val <= rubbishVal)
-						pointcloud.emplace_back(float(x), float(y), float(z));
-
-					m_Progress.value = float(p) / data.size();
-				}
-			}
-		}
-	}
-	auto endT = high_resolution_clock::now();
-	auto exT = duration_cast<milliseconds>(endT - startT).count();
-	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " milliseconds\n";
-
-
 	// create mesh
 	SceneGraph::GetInstance()->AddObject(
-		new PointCloud(m_pDevice, fileName, pointcloud, pos)
+		new PointCloud(m_pDevice, fileName, data, pos)
 	);
+}
+
+void IOFiles::ReadVarHeader(std::ifstream& f, std::vector<uint32_t>& shape) const
+{
+	float frameDur;
+	uint32_t nDim;
+	uint32_t nfr, bytesPerData;
+
+	f.read((char*)&nDim, sizeof(uint32_t));
+	shape.resize(nDim);
+	for (uint32_t i = 0; i < nDim; i++)
+		f.read((char*)&shape[i], sizeof(uint32_t));
+	f.read((char*)&nfr, sizeof(uint32_t));
+	f.read((char*)&bytesPerData, sizeof(uint32_t));
+	if (bytesPerData != 4)
+	{
+		std::cout << "BytesPerData is not 4\n";
+		return;
+	}
+	f.read((char*)&frameDur, sizeof(float));
+
+	if (shape.size() < 3)	// if the size is smaller, resize the vector to 3 size;
+		shape.resize(3, 1);
+	// add the nfr to this vector
+	shape.push_back(nfr);
+	std::reverse(shape.begin(), shape.end());
+
+	for (uint32_t i : shape)
+	{
+		if (i <= 0)
+		{
+			std::cout << "Dimensions must be greater than 0";
+			return;
+		}
+	}
 }
 
 void IOFiles::LoadingPopUpImpl() const

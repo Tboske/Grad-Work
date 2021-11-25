@@ -3,6 +3,7 @@
 #include "IOFiles.h"
 #include <thread>
 #include "SceneGraph.h"
+#include "Progress.h"
 
 UI::UI(SDL_Window* pWindow, ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext)
 {
@@ -42,7 +43,7 @@ void UI::RenderUI(float height)
 
 	ImGui::Begin("test", NULL, m_WindowFlags);
 	{
-		IOFiles::LoadingPopUp();
+		Progress::LoadingPopUp();
 
 		ImGui::SetWindowPos({ 0, 0 });
 		ImGui::SetWindowSize({ 300, height });

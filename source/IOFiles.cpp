@@ -2,19 +2,13 @@
 #include "IOFiles.h"
 #include <fstream>
 #include <regex>
-#include "SceneGraph.h"
-#include "imgui.h"
 #include <algorithm>
 #include <numeric>
+#include "SceneGraph.h"
+#include "Progress.h"
 
 IOFiles::~IOFiles()
 {
-}
-
-IOFiles* IOFiles::GetInstance()
-{
-	static IOFiles* pInstance{ new IOFiles() };
-	return pInstance;
 }
 
 bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::string& location)
@@ -80,7 +74,8 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint3& pos)
 {
 	auto inst = GetInstance();
-	inst->m_Progress.Start("Start loading in Mesh");
+	Progress::Start("Start loading in Mesh");
+	
 
 	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
 	std::smatch sm{};
@@ -103,7 +98,7 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 		else
 			std::cout << "Unsupported file extension\n";
 	}
-	inst->m_Progress.active = false;
+	Progress::SetInactive();
 }
 
 void IOFiles::AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index)
@@ -197,97 +192,89 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 	std::string newFile{ file.begin(), file.end() - 4 };
 
 	// open vertex position file
-	auto startT = high_resolution_clock::now();
+	myFile.open(newFile + ".pts");
+	if(myFile.is_open())
 	{
-		myFile.open(newFile + ".pts");
-		if(myFile.is_open())
+		std::getline(myFile, line);
+		size_t vertCount = std::stoi(line);
+		tempVerts.resize(vertCount);
+
+		Progress::ResetProgress("Importing Vertices");
+		for (size_t i = 0; i < tempVerts.size(); ++i)
 		{
-			std::getline(myFile, line);
-			size_t vertCount = std::stoi(line);
-			tempVerts.resize(vertCount);
+			FPoint3& vert = tempVerts[i];
 
-			m_Progress.ResetProgress("Importing Vertices");
-			for (size_t i = 0; i < tempVerts.size(); ++i)
+			myFile >> vert.x >> vert.y >> vert.z;
+			vert.x /= 1000;
+			vert.y /= 1000;
+			vert.z /= 1000;
+
+			Progress::SetValue(float(i) / tempVerts.size());
+		}
+		myFile.close();
+	}
+
+	myFile.open(newFile + ".surf");
+	if (myFile.is_open())
+	{
+		while (std::getline(myFile, line))
+		{
+			if (line.empty()) // check to see if it failed to insert the next line
 			{
-				FPoint3& vert = tempVerts[i];
+				std::getline(myFile, line);
+				if (line.empty()) // if still no line found, break out of the loop
+					break;
+			}
 
-				myFile >> vert.x >> vert.y >> vert.z;
-				vert.x /= 1000;
-				vert.y /= 1000;
-				vert.z /= 1000;
+			size_t indCount = std::stoi(line);
+			tempIndices.reserve(tempIndices.size() + indCount);
 
-				m_Progress.value = float(i) / tempVerts.size();
+			std::string c;
+			Progress::ResetProgress("Importing Indices");
+
+			for (size_t i = 0; i < indCount; ++i)
+			{
+				IPoint3 index{};
+				myFile >> c >> index.x >> index.y >> index.z;
+				tempIndices.push_back(index);
+
+				Progress::SetValue(float(i) / tempIndices.size());
 			}
 		}
 		myFile.close();
 	}
 
+
+	Progress::ResetProgress("Constructing Mesh");
+	for (uint32_t i = 0; i < tempIndices.size(); ++i)
 	{
-		myFile.open(newFile + ".surf");
-		if (myFile.is_open())
-		{
-			while (std::getline(myFile, line))
-			{
-				if (line.empty()) // check to see if it failed to insert the next line
-				{
-					std::getline(myFile, line);
-					if (line.empty()) // if still no line found, break out of the loop
-						break;
-				}
+		constexpr int vertsPerLoop = 3;
+		indices.reserve(tempIndices.size() * vertsPerLoop);
+		vertices.reserve(tempIndices.size() * vertsPerLoop);
 
-				size_t indCount = std::stoi(line);
-				tempIndices.reserve(tempIndices.size() + indCount);
+		for (size_t j = 0; j < vertsPerLoop; j++)
+			indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
 
-				std::string c;
-				m_Progress.ResetProgress("Importing Indices");
+		const IPoint4& index = tempIndices[i];
 
-				for (size_t i = 0; i < indCount; ++i)
-				{
-					IPoint3 index{};
-					myFile >> c >> index.x >> index.y >> index.z;
-					tempIndices.push_back(index);
+		const FPoint3& p0 = tempVerts[index.x];
+		const FPoint3& p1 = tempVerts[index.y];
+		const FPoint3& p2 = tempVerts[index.z];
 
-					m_Progress.value = float(i) / tempIndices.size();
-				}
-			}
-		}
-		myFile.close();
+		// normal Calculation
+		FVector3 normal{ Cross(p1 - p0, p2 - p0) };
+		Normalize(normal);
 
+		// triangle
+		//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
+		FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
+		vertices.emplace_back(p0, -normal, color);
+		vertices.emplace_back(p1, -normal, color);
+		vertices.emplace_back(p2, -normal, color);
 
-		m_Progress.ResetProgress("Constructing Mesh");
-		for (uint32_t i = 0; i < tempIndices.size(); ++i)
-		{
-			constexpr int vertsPerLoop = 3;
-			indices.reserve(tempIndices.size() * vertsPerLoop);
-			vertices.reserve(tempIndices.size() * vertsPerLoop);
-
-			for (size_t j = 0; j < vertsPerLoop; j++)
-				indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
-
-			const IPoint4& index = tempIndices[i];
-
-			const FPoint3& p0 = tempVerts[index.x];
-			const FPoint3& p1 = tempVerts[index.y];
-			const FPoint3& p2 = tempVerts[index.z];
-
-			// normal Calculation
-			FVector3 normal{ Cross(p1 - p0, p2 - p0) };
-			Normalize(normal);
-
-			// triangle
-			//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
-			FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
-			vertices.emplace_back(p0, -normal, color);
-			vertices.emplace_back(p1, -normal, color);
-			vertices.emplace_back(p2, -normal, color);
-
-
-			m_Progress.value = float(i) / tempIndices.size();
-		}
+		Progress::SetValue(float(i) / tempIndices.size());
 	}
-	auto endT = high_resolution_clock::now();
-	auto exT = duration_cast<seconds>(endT - startT).count();
-	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
+	
 
 
 	SceneGraph::GetInstance()->AddObject(
@@ -311,94 +298,84 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 	std::string newFile{ file.begin(), file.end() - 5 };
 
 	// open vertex position file
-	auto startT = high_resolution_clock::now();
+	myFile.open(newFile + ".pts");
+	if (myFile.is_open())
 	{
-		myFile.open(newFile + ".pts");
-		if (myFile.is_open())
+		std::getline(myFile, line);
+		size_t vertCount = std::stoi(line);
+		tempVerts.resize(vertCount);
+
+		Progress::ResetProgress("Importing Vertices");
+		for (size_t i = 0; i < tempVerts.size(); ++i)
 		{
-			std::getline(myFile, line);
-			size_t vertCount = std::stoi(line);
-			tempVerts.resize(vertCount);
+			FPoint3& vert = tempVerts[i];
 
-			m_Progress.ResetProgress("Importing Vertices");
-			for (size_t i = 0; i < tempVerts.size(); ++i)
+			myFile >> vert.x >> vert.y >> vert.z;
+			vert.x /= 1000;
+			vert.y /= 1000;
+			vert.z /= 1000;
+
+			Progress::SetValue(float(i) / tempVerts.size());
+		}
+		myFile.close();
+	}
+
+	myFile.open(newFile + ".elem");
+	if (myFile.is_open())
+	{
+		while (std::getline(myFile, line))
+		{
+			size_t indCount = std::stoi(line);
+			tempIndices.resize(indCount);
+
+			std::string c;
+			Progress::ResetProgress("Importing Indices");
+
+			for (size_t i = 0; i < tempIndices.size(); ++i)
 			{
-				FPoint3& vert = tempVerts[i];
+				IPoint4& index = tempIndices[i].second;
+				myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
 
-				myFile >> vert.x >> vert.y >> vert.z;
-				vert.x /= 1000;
-				vert.y /= 1000;
-				vert.z /= 1000;
-
-				m_Progress.value = float(i) / tempVerts.size();
+				Progress::SetValue(float(i) / tempIndices.size());
 			}
 		}
 		myFile.close();
 	}
 
+	Progress::ResetProgress("Constructing Mesh");
+	for (uint32_t i = 0; i < tempIndices.size(); ++i)
 	{
-		myFile.open(newFile + ".elem");
-		if (myFile.is_open())
-		{
-			while (std::getline(myFile, line))
-			{
-				size_t indCount = std::stoi(line);
-				tempIndices.resize(indCount);
+		constexpr int vertsPerLoop = 6;
+		indices.reserve(tempIndices.size() * vertsPerLoop);
+		vertices.reserve(tempIndices.size() * vertsPerLoop);
 
-				std::string c;
-				m_Progress.ResetProgress("Importing Indices");
+		for (size_t j = 0; j < vertsPerLoop; j++)
+			indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
 
-				for (size_t i = 0; i < tempIndices.size(); ++i)
-				{
-					IPoint4& index = tempIndices[i].second;
-					myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
+		const IPoint4& index = tempIndices[i].second;
 
-					m_Progress.value = float(i) / tempIndices.size();
-				}
-			}
-		}
-		myFile.close();
+		const FPoint3& p0 = tempVerts[index.x];
+		const FPoint3& p1 = tempVerts[index.y];
+		const FPoint3& p2 = tempVerts[index.z];
+		const FPoint3& p3 = tempVerts[index.w];
 
+		// normal Calculation
+		FVector3 normal{ Cross(p1 - p0, p2 - p0) };
+		Normalize(normal);
 
-		m_Progress.ResetProgress("Constructing Mesh");
-		for (uint32_t i = 0; i < tempIndices.size(); ++i)
-		{
-			constexpr int vertsPerLoop = 6;
-			indices.reserve(tempIndices.size() * vertsPerLoop);
-			vertices.reserve(tempIndices.size() * vertsPerLoop);
+		// triangle
+		//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
+		FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
+		vertices.emplace_back(p0, -normal, color);
+		vertices.emplace_back(p1, -normal, color);
+		vertices.emplace_back(p2, -normal, color);
+		// triangle2
+		vertices.emplace_back(p1, -normal, color);
+		vertices.emplace_back(p3, -normal, color);
+		vertices.emplace_back(p2, -normal, color);
 
-			for (size_t j = 0; j < vertsPerLoop; j++)
-				indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
-
-			const IPoint4& index = tempIndices[i].second;
-
-			const FPoint3& p0 = tempVerts[index.x];
-			const FPoint3& p1 = tempVerts[index.y];
-			const FPoint3& p2 = tempVerts[index.z];
-			const FPoint3& p3 = tempVerts[index.w];
-
-			// normal Calculation
-			FVector3 normal{ Cross(p1 - p0, p2 - p0) };
-			Normalize(normal);
-
-			// triangle
-			//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
-			FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
-			vertices.emplace_back(p0, -normal, color);
-			vertices.emplace_back(p1, -normal, color);
-			vertices.emplace_back(p2, -normal, color);
-			// triangle2
-			vertices.emplace_back(p1, -normal, color);
-			vertices.emplace_back(p3, -normal, color);
-			vertices.emplace_back(p2, -normal, color);
-
-
-			m_Progress.value = float(i) / tempIndices.size();
-		}
+		Progress::SetValue(float(i) / tempIndices.size());
 	}
-	auto endT = high_resolution_clock::now();
-	auto exT = duration_cast<seconds>(endT - startT).count();
-	std::cout << "Voxel mesh loaded in: " + std::to_string(exT) + " seconds\n";
 
 	SceneGraph::GetInstance()->AddObject(
 		new Mesh(m_pDevice, fileName, vertices, indices, pos)
@@ -489,28 +466,5 @@ void IOFiles::ReadVarHeader(std::ifstream& f, std::vector<uint32_t>& shape) cons
 			std::cout << "Dimensions must be greater than 0";
 			return;
 		}
-	}
-}
-
-void IOFiles::LoadingPopUpImpl() const
-{
-	// Always center this window when appearing
-	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize({ 200, 95 });
-
-	if (m_Progress.active)
-		ImGui::OpenPopup("LoadingPopUp");
-
-	if (ImGui::BeginPopupModal("LoadingPopUp", &GetInstance()->m_Progress.active, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		ImGui::Text(m_Progress.description.c_str());
-		ImGui::Separator();
-		ImGui::ProgressBar(m_Progress.value);
-
-		auto elapsed = duration_cast<seconds>(high_resolution_clock::now() - m_Progress.startTime).count();
-		ImGui::Text(std::string{ "Elapsed time: " + std::to_string(elapsed) + "s" }.c_str());
-
-		ImGui::EndPopup();
 	}
 }

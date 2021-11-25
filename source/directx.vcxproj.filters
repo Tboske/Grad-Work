@@ -139,6 +139,9 @@
     <ClInclude Include="MarchTable.h">
       <Filter>Mesh Generation</Filter>
     </ClInclude>
+    <ClInclude Include="Progress.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ERenderer.cpp">
@@ -203,6 +206,9 @@
     </ClCompile>
     <ClCompile Include="MarchingCubes.cpp">
       <Filter>Mesh Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="Progress.cpp">
+      <Filter>Engine\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

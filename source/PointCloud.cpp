@@ -11,9 +11,9 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 	float rubbishVal{ pointCloud[0][0][0] };
 	m_RenderPoints.reserve(pointCloud.size());
 
-	const uint32_t zSize = pointCloud.size();
-	const uint32_t ySize = pointCloud[0].size();
-	const uint32_t xSize = pointCloud[0][0].size();
+	const uint32_t zSize = uint32_t(pointCloud.size());
+	const uint32_t ySize = uint32_t(pointCloud[0].size());
+	const uint32_t xSize = uint32_t(pointCloud[0][0].size());
 
 	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
 	{

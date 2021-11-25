@@ -388,8 +388,6 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 	std::vector<uint32_t> shape;
 
 	std::ifstream f;
-	auto startT = high_resolution_clock::now();
-
 	f.open(file);
 	if (f.is_open())
 	{

@@ -12,11 +12,9 @@ public:
 	BaseObject(ID3D11Device* pDevice, const std::string& meshName, const FPoint3& pos, const std::wstring& shader);
 	~BaseObject();
 
-	FMatrix4& GetTransform() { return m_Transform; }
-	std::string GetMeshName() const { return m_MeshName; }
-
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const;
 	virtual void Update() = 0;
+	virtual void RenderUI();
 
 protected:
 	Effect* m_pEffect = nullptr;

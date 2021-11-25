@@ -115,32 +115,8 @@ void UI::MeshTab() const
 {
 	if (ImGui::BeginTabItem("MeshTab"))
 	{
-		auto& meshList = SceneGraph::GetInstance()->GetObjects();
-		for (int i = 0; i < meshList.size(); i++)
-		{
-			FMatrix4& transform = meshList[i]->GetTransform();
-			if(ImGui::TreeNode((meshList[i]->GetMeshName() + "###" + std::to_string(i)).c_str()))
-			{
-				// Position of the object
-				ImGui::PushID(i * 2); 
-					ImGui::Text("Position: ");
-					ImGui::SameLine();
-					ImGui::DragFloat3("", &transform[3].x, 0.05f, -FLT_MAX, +FLT_MAX);
-				ImGui::PopID();
-				// scale of the object
-				ImGui::PushID(i * 2 + 1);
-					float scale[4] = { transform[0].x, transform[1].y, transform[2].z, 1.f };
-					ImGui::Text("Scale: ");
-					ImGui::SameLine();
-					ImGui::DragFloat4("", scale, 0.01f, -FLT_MAX, +FLT_MAX);
-				
-					transform[0].x = scale[0] * scale[3];
-					transform[1].y = scale[1] * scale[3];
-					transform[2].z = scale[2] * scale[3];
-				ImGui::PopID();	
-			ImGui::TreePop();
-			}
-		}
+		for (auto& mesh : SceneGraph::GetInstance()->GetObjects())
+			mesh->RenderUI();
 
 		ImGui::EndTabItem();
 	}

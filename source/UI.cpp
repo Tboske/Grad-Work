@@ -115,8 +115,8 @@ void UI::MeshTab() const
 {
 	if (ImGui::BeginTabItem("MeshTab"))
 	{
-		for (auto& mesh : SceneGraph::GetInstance()->GetObjects())
-			mesh->RenderUI();
+		for (BaseObject* pMesh : SceneGraph::GetInstance()->GetObjects())
+			pMesh->RenderUI();
 
 		ImGui::EndTabItem();
 	}

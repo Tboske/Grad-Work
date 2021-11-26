@@ -6,6 +6,7 @@
 #include <numeric>
 #include "SceneGraph.h"
 #include "Progress.h"
+#include <ios>
 
 IOFiles::~IOFiles()
 {
@@ -384,40 +385,31 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 
 void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fileName, const FPoint3& pos)
 {
-	std::vector<std::vector<std::vector<float>>> data;
+	std::vector<std::vector<std::vector<std::vector<float>>>> data;
 	std::vector<uint32_t> shape;
 
 	std::ifstream f;
-	f.open(file);
+	
+	f.open(file, std::fstream::binary);
 	if (f.is_open())
 	{
-					std::streampos fsizestart = 0;
-					fsizestart = f.tellg();
-					f.seekg(0, std::ios::end);
-					fsizestart = f.tellg() - fsizestart;
-					f.seekg(0);
-
 		ReadVarHeader(f, shape);
 		
 		// read all information in data
 		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
 
 		// initializes the vector with the proper sizes
-		data = std::vector<std::vector<std::vector<float>>>(
-			shape[1], std::vector<std::vector<float>>(
-			shape[2], std::vector<float>(
-			shape[3]))
-		);
+		data.reserve(product);
+		data = std::vector<std::vector<std::vector<std::vector<float>>>>( shape[0]
+					     , std::vector<std::vector<std::vector<float>>>(  shape[1]
+									 , std::vector<std::vector<float>>(   shape[2]
+												 , std::vector<float>(    shape[3]))));
 
-		f.read((char*)data[0][0].data(), product);
-
-		// it is possible that data is too short
-		const uint32_t nfr = uint32_t(std::floorf(float(data.size()) / std::accumulate(shape.cbegin() + 1, shape.cend(), 1, std::multiplies<int>())));
-		if (nfr < shape[0])
-			std::cout << "Not all frames recorded in varfile.\n";
-		else
-			assert(nfr == shape[0]);
-		shape[0] = nfr;
+		for (uint32_t t = 0; t < shape[0]; ++t)
+			for (uint32_t z = 0; z < shape[1]; ++z)
+				for (uint32_t y = 0; y < shape[2]; ++y)
+					for (uint32_t x = 0; x < shape[3]; ++x)
+						f.read((char*)&data[t][z][y][x], sizeof(float));
 
 		// check if last frame is corrupt
 		if (data.size() > product)

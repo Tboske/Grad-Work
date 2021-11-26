@@ -19,7 +19,6 @@ public:
 protected:
 	Effect* m_pEffect = nullptr;
 private:
-
 	Elite::FMatrix4 m_Transform;
 	std::string m_MeshName;
 };

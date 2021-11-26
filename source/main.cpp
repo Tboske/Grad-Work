@@ -101,7 +101,6 @@ int main(int argc, char* args[])
 			printTimer = 0.f;
 			std::cout << "FPS: " << pTimer->GetFPS() << std::endl;
 		}
-
 	}
 	pTimer->Stop();
 

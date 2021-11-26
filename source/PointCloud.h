@@ -10,7 +10,7 @@ class PointCloud final : public BaseObject
 public:
 	PointCloud(ID3D11Device* pDevice
 		, const std::string& meshName
-		, const std::vector<std::vector<std::vector<float>>>& pointCloud
+		, const std::vector<std::vector<std::vector<std::vector<float>>>>& pointCloud
 		, const FPoint3& pos = { 0,0,0 }
 	);
 	~PointCloud();
@@ -25,7 +25,7 @@ private:
 	ID3D11Buffer* m_pVertexBuffer = nullptr;
 	UINT m_VertexCount = 0;
 
-	const std::vector<std::vector<std::vector<float>>> m_PointCloud;
+	const std::vector<std::vector<std::vector<std::vector<float>>>> m_PointCloud;
 	std::vector<FPoint3> m_RenderPoints;
 
 	HRESULT Initialize(ID3D11Device* pDevice);

@@ -3,20 +3,22 @@
 #include "IOFiles.h"
 #include "SceneGraph.h"
 
-PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<std::vector<std::vector<float>>>& pointCloud, const FPoint3& pos)
+PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<std::vector<std::vector<std::vector<float>>>>& pointCloud, const FPoint3& pos)
 	: BaseObject(pDevice, meshName, pos, L"Resources/PointShader.fx")
 	, m_PointCloud{ pointCloud }
 {
 	// everything containing the rubbish value is not a piece of the pointcloud
-	float rubbishVal{ pointCloud[0][0][0] };
-	m_RenderPoints.reserve(pointCloud.size());
+	m_RenderPoints.reserve(m_PointCloud.size());
 
-	const uint32_t zSize = uint32_t(pointCloud.size());
-	const uint32_t ySize = uint32_t(pointCloud[0].size());
-	const uint32_t xSize = uint32_t(pointCloud[0][0].size());
 
-	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
+	const uint32_t tSize = uint32_t(m_PointCloud.size());
+	const uint32_t zSize = uint32_t(m_PointCloud[0].size());
+	const uint32_t ySize = uint32_t(m_PointCloud[0][0].size());
+	const uint32_t xSize = uint32_t(m_PointCloud[0][0][0].size());
+
+	for (uint32_t t = 0; t < tSize; ++t)	// for now we just use 1 time frame
 	{
+		float rubbishVal{ m_PointCloud[t][0][0][0]};
 		for (uint32_t z = 0; z < zSize; ++z)
 		{
 			for (uint32_t y = 0; y < ySize; ++y)
@@ -24,7 +26,7 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 				for (uint32_t x = 0; x < xSize; ++x)
 				{
 					// this calculates the 1d array position
-					float val = m_PointCloud[z][y][x];
+					float val = m_PointCloud[t][z][y][x];
 
 					// if the coordinate has a lower value then the rubbish value, dont add it to the pointcloud
 					if (val <= rubbishVal)
@@ -35,6 +37,7 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 			}
 		}
 	}
+	m_VertexCount = UINT(m_RenderPoints.size());
 
 	Initialize(pDevice);
 }
@@ -75,7 +78,6 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	{
 		m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
 		pDeviceContext->Draw(m_VertexCount, 0);
-		//pDeviceContext->DrawIndexed((uint32_t)m_Indices.size(), 0, 0);
 	}
 }
 
@@ -85,8 +87,6 @@ void PointCloud::Update()
 
 HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 {
-	m_VertexCount = UINT(m_RenderPoints.size());
-
 	// Create Vertex Layout
 	HRESULT result = S_OK;
 	static const uint32_t numElements{ 1 };

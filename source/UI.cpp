@@ -116,7 +116,13 @@ void UI::MeshTab() const
 	if (ImGui::BeginTabItem("MeshTab"))
 	{
 		for (BaseObject* pMesh : SceneGraph::GetInstance()->GetObjects())
-			pMesh->RenderUI();
+		{
+			if (ImGui::TreeNode(pMesh, pMesh->GetMeshName().c_str()))
+			{
+				pMesh->RenderUI();
+				ImGui::TreePop();
+			}
+		}
 
 		ImGui::EndTabItem();
 	}

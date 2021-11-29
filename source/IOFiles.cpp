@@ -254,7 +254,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 		vertices.reserve(tempIndices.size() * vertsPerLoop);
 
 		for (size_t j = 0; j < vertsPerLoop; j++)
-			indices.emplace_back(uint64_t(i) * vertsPerLoop + j);
+			indices.emplace_back(uint32_t(uint64_t(i) * vertsPerLoop + j));
 
 		const IPoint4& index = tempIndices[i];
 
@@ -385,7 +385,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 
 void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fileName, const FPoint3& pos)
 {
-	std::vector<std::vector<std::vector<std::vector<float>>>> data;
+	std::vector<float> data;
 	std::vector<uint32_t> shape;
 
 	std::ifstream f;
@@ -398,30 +398,31 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 		// read all information in data
 		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
 
-		// initializes the vector with the proper sizes
-		data.reserve(product);
-		data = std::vector<std::vector<std::vector<std::vector<float>>>>( shape[0]
-					     , std::vector<std::vector<std::vector<float>>>(  shape[1]
-									 , std::vector<std::vector<float>>(   shape[2]
-												 , std::vector<float>(    shape[3]))));
+		// resize the data vector
+		data.resize(product);
+		// read all the binary data into data
+		f.read((char*)data.data(), product * sizeof(float));
 
-		for (uint32_t t = 0; t < shape[0]; ++t)
-			for (uint32_t z = 0; z < shape[1]; ++z)
-				for (uint32_t y = 0; y < shape[2]; ++y)
-					for (uint32_t x = 0; x < shape[3]; ++x)
-						f.read((char*)&data[t][z][y][x], sizeof(float));
+		// it is possible that data is too short
+		const uint32_t nfr = uint32_t(std::floorf(float(data.size()) / std::accumulate(shape.cbegin() + 1, shape.cend(), 1, std::multiplies<int>())));
+		if (nfr < shape[0])
+			std::cout << "Not all frames recorded in varfile.\n";
+		else
+			assert(nfr == shape[0]);
+		shape[0] = nfr;
 
 		// check if last frame is corrupt
 		if (data.size() > product)
 			std::cout << "Part of the last frame is missing! Frame skipped.";
 
+		// create mesh
+		SceneGraph::GetInstance()->AddObject(
+			new PointCloud(m_pDevice, fileName, data, shape, pos)
+		);
+
 		f.close();
 	}
 
-	// create mesh
-	SceneGraph::GetInstance()->AddObject(
-		new PointCloud(m_pDevice, fileName, data, pos)
-	);
 }
 
 void IOFiles::ReadVarHeader(std::ifstream& f, std::vector<uint32_t>& shape) const

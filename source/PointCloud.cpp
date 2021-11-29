@@ -3,33 +3,26 @@
 #include "IOFiles.h"
 #include "SceneGraph.h"
 
-PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<std::vector<std::vector<std::vector<float>>>>& pointCloud, const FPoint3& pos)
+PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
 	: BaseObject(pDevice, meshName, pos, L"Resources/PointShader.fx")
-	, m_PointCloud{ pointCloud }
 {
 	// everything containing the rubbish value is not a piece of the pointcloud
-	m_RenderPoints.reserve(m_PointCloud.size());
+	m_RenderPoints.reserve(pointCloud.size());
 
-
-	const uint32_t tSize = uint32_t(m_PointCloud.size());
-	const uint32_t zSize = uint32_t(m_PointCloud[0].size());
-	const uint32_t ySize = uint32_t(m_PointCloud[0][0].size());
-	const uint32_t xSize = uint32_t(m_PointCloud[0][0][0].size());
-
-	for (uint32_t t = 0; t < tSize; ++t)	// for now we just use 1 time frame
+	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
 	{
-		float rubbishVal{ m_PointCloud[t][0][0][0]};
-		for (uint32_t z = 0; z < zSize; ++z)
+		float rubbishVal = pointCloud[t * shape[1] * shape[2] * shape[3]];
+		for (uint32_t z = 0; z < shape[1]; ++z)
 		{
-			for (uint32_t y = 0; y < ySize; ++y)
+			for (uint32_t y = 0; y < shape[2]; ++y)
 			{
-				for (uint32_t x = 0; x < xSize; ++x)
+				for (uint32_t x = 0; x < shape[3]; ++x)
 				{
 					// this calculates the 1d array position
-					float val = m_PointCloud[t][z][y][x];
+					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
 
-					// if the coordinate has a lower value then the rubbish value, dont add it to the pointcloud
-					if (val <= rubbishVal)
+					// this should be removed eventually
+					if (rubbishVal >= pointCloud[p])
 						continue;
 
 					m_RenderPoints.emplace_back(float(x), float(y), float(z));
@@ -37,7 +30,6 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 			}
 		}
 	}
-	m_VertexCount = UINT(m_RenderPoints.size());
 
 	Initialize(pDevice);
 }
@@ -46,6 +38,9 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 
 PointCloud::~PointCloud()
 {
+	m_pColorEffectVariable->Release();
+	m_pColorEffectVariable = nullptr;
+
 	m_pVertexBuffer->Release();
 	m_pVertexBuffer = nullptr;
 
@@ -62,9 +57,6 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	const UINT offset = 0;
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
-	// Set index buffer
-	//pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
 	// Set the input layour
 	pDeviceContext->IASetInputLayout(m_pVertexLayout);
 
@@ -77,7 +69,7 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
 		m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
-		pDeviceContext->Draw(m_VertexCount, 0);
+		pDeviceContext->Draw(UINT(m_RenderPoints.size()), 0);
 	}
 }
 
@@ -85,8 +77,24 @@ void PointCloud::Update()
 {
 }
 
+void PointCloud::RenderUI()
+{
+	BaseObject::RenderUI();
+
+	ImGui::PushID((char*)this + 'c');
+		ImGui::Text("Color: ");
+		ImGui::SameLine();
+		if (ImGui::ColorEdit3(" ", &m_PointColor.r))
+			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
+	ImGui::PopID();
+}
+
 HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 {
+	// set the variables
+	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
+	m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
+
 	// Create Vertex Layout
 	HRESULT result = S_OK;
 	static const uint32_t numElements{ 1 };
@@ -100,10 +108,11 @@ HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
 	m_pEffect->GetTechnique()->GetPassByIndex(0)->GetDesc(&passDesc);
-	result = pDevice->CreateInputLayout(vertexDesc, numElements,
-		passDesc.pIAInputSignature,
-		passDesc.IAInputSignatureSize,
-		&m_pVertexLayout);
+	result = pDevice->CreateInputLayout(vertexDesc
+		, numElements
+		, passDesc.pIAInputSignature
+		, passDesc.IAInputSignatureSize
+		, &m_pVertexLayout);
 	if (FAILED(result))
 		return result;
 
@@ -119,6 +128,6 @@ HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 	result = pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 	if (FAILED(result))
 		return result;
-	
+
 	return result;
 }

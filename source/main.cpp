@@ -63,7 +63,6 @@ int main(int argc, char* args[])
 	//	new Mesh(pRenderer->GetDevice(), "Resources/Import/TestCube.obj"
 	//));
 
-
 	//Start loop
 	pTimer->Start();
 	float printTimer = 0.f;

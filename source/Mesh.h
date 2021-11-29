@@ -29,6 +29,7 @@ public:
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const override;
 	virtual void Update() override;
+	virtual void RenderUI() override;
 
 private:
 	ID3D11InputLayout* m_pVertexLayout = nullptr;

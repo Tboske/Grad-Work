@@ -16,9 +16,11 @@ public:
 	virtual void Update() = 0;
 	virtual void RenderUI();
 
+	const std::string& GetMeshName() const { return m_MeshName; }
+
 protected:
 	Effect* m_pEffect = nullptr;
-private:
 	Elite::FMatrix4 m_Transform;
+private:
 	std::string m_MeshName;
 };

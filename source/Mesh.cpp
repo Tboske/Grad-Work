@@ -53,6 +53,23 @@ void Mesh::Update()
 {
 }
 
+void Mesh::RenderUI()
+{
+	BaseObject::RenderUI();
+
+	// scale of the object
+	ImGui::PushID((char*)this + 's');
+		float scale[4] = { m_Transform[0].x, m_Transform[1].y, m_Transform[2].z, 1.f };
+		ImGui::Text("Scale: ");
+		ImGui::SameLine();
+		ImGui::DragFloat4("", scale, 0.01f, -FLT_MAX, +FLT_MAX);
+
+		m_Transform[0].x = scale[0] * scale[3];
+		m_Transform[1].y = scale[1] * scale[3];
+		m_Transform[2].z = scale[2] * scale[3];
+	ImGui::PopID();
+}
+
 HRESULT Mesh::Initialize(ID3D11Device* pDevice, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices)
 {
 	m_Vertices = vertices;

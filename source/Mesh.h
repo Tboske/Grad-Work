@@ -23,7 +23,7 @@ public:
 	};
 
 	Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const FPoint3& pos = { 0,0,0 });
-	~Mesh();
+	virtual ~Mesh();
 
 	const std::vector<Vertex_Input>& GetVertexData() const { return m_Vertices; }
 

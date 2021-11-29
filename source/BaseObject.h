@@ -10,7 +10,7 @@ class BaseObject
 {
 public:
 	BaseObject(ID3D11Device* pDevice, const std::string& meshName, const FPoint3& pos, const std::wstring& shader);
-	~BaseObject();
+	virtual ~BaseObject();
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const;
 	virtual void Update() = 0;

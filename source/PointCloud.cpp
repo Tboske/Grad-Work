@@ -38,14 +38,14 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 
 PointCloud::~PointCloud()
 {
-	m_pColorEffectVariable->Release();
-	m_pColorEffectVariable = nullptr;
-
 	m_pVertexBuffer->Release();
 	m_pVertexBuffer = nullptr;
 
 	m_pVertexLayout->Release();
 	m_pVertexLayout = nullptr;
+
+	m_pColorEffectVariable->Release();
+	m_pColorEffectVariable = nullptr;
 }
 
 void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const

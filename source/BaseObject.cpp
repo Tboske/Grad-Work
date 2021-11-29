@@ -26,7 +26,6 @@ void BaseObject::Render(ID3D11DeviceContext* pDeviceContext) const
 
 void BaseObject::RenderUI()
 {
-
 		// Position of the object
 		ImGui::PushID((char*)this + 'p');
 			ImGui::Text("Position: ");

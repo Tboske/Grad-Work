@@ -14,7 +14,7 @@ public:
 		, const std::vector<uint32_t>& shape
 		, const FPoint3& pos = { 0,0,0 }
 	);
-	~PointCloud();
+	virtual ~PointCloud();
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const override;
 	virtual void Update() override;

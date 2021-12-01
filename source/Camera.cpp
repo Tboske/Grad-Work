@@ -76,6 +76,9 @@ void Camera::CheckInputs(float dTime)
 	}
 
 	const Uint8* keyState = SDL_GetKeyboardState(NULL);
+	if (keyState[SDL_SCANCODE_LSHIFT])
+		dTime *= m_SpeedModifier;
+
 	if (keyState[SDL_SCANCODE_A])
 		m_ONB[3].xyz = m_ONB[3].xyz + (-Elite::GetNormalized(m_ONB[0].xyz) * dTime * m_MovementSensitivity);
 	

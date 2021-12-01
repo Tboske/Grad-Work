@@ -10,7 +10,7 @@
 #include "backends/imgui_impl_dx11.h"
 
 #include "ETimer.h"
-#include "ERenderer.h"
+#include "Renderer.h"
 #include "SceneGraph.h"
 #include <vector>
 #include "Mesh.h"
@@ -46,22 +46,14 @@ int main(int argc, char* args[])
 
 	//Initialize "framework"
 	auto pTimer{ std::make_unique<Elite::Timer>() };
-	auto pRenderer{ std::make_unique<Elite::Renderer>(pWindow) };
 
 	// initialize input output files
-	IOFiles::Initialize(pRenderer->GetDevice());
+	Renderer::Initialize(pWindow);
+	IOFiles::Initialize();
 
 	// Initialize SceneGraph
 	SceneGraph* scene = SceneGraph::GetInstance();
 	scene->SetCamera(new Camera(Elite::FPoint3(0.f, 10.f, 100.f), Elite::FVector3(0.f, 0.f, 1.f), (float)width / (float)height, 90.f, 0.1f, 10000.f)); // in degrees
-
-	// add textures
-	//scene->AddTexture("UVGrid", new Texture(pRenderer->GetDevice(), "Resources/uv_grid_2.png"));
-	// add meshes
-
-	//scene->AddMesh(
-	//	new Mesh(pRenderer->GetDevice(), "Resources/Import/TestCube.obj"
-	//));
 
 	//Start loop
 	pTimer->Start();
@@ -90,7 +82,7 @@ int main(int argc, char* args[])
 			scene->GetCamera()->CheckInputs(pTimer->GetElapsed());
 
 		//--------- Render ---------
-		pRenderer->Render();
+		Renderer::Render();
 
 		//--------- Timer ---------
 		pTimer->Update();
@@ -105,6 +97,7 @@ int main(int argc, char* args[])
 
 	// cleanup scenegraph
 	delete SceneGraph::GetInstance();
+	Renderer::Cleanup();
 
 	//Shutdown "framework"
 	ShutDown(pWindow);

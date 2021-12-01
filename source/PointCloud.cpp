@@ -2,9 +2,12 @@
 #include "PointCloud.h"
 #include "IOFiles.h"
 #include "SceneGraph.h"
+#include "MarchingCubes.h"
+#include "Renderer.h"
 
-PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
-	: BaseObject(pDevice, meshName, pos, L"Resources/PointShader.fx")
+PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
+	: BaseObject(meshName, pos, L"Resources/PointShader.fx")
+	, m_PointCloud{ pointCloud }
 	, m_Shape{ shape }
 {
 	// everything containing the rubbish value is not a piece of the pointcloud
@@ -12,7 +15,7 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 
 	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
 	{
-		float rubbishVal = pointCloud[t * shape[1] * shape[2] * shape[3]];
+		const float rubbishVal = pointCloud[t * shape[1] * shape[2] * shape[3]];
 		for (uint32_t z = 0; z < shape[1]; ++z)
 		{
 			for (uint32_t y = 0; y < shape[2]; ++y)
@@ -31,7 +34,7 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 			}
 		}
 	}
-	Initialize(pDevice);
+	Initialize();
 }
 
 
@@ -86,9 +89,11 @@ void PointCloud::RenderUI()
 		if (ImGui::ColorEdit3(" ", &m_PointColor.r))
 			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
 	ImGui::PopID();
+	if (ImGui::Button("GenerateMesh"))
+		StartMarchingCubes();
 }
 
-HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
+HRESULT PointCloud::Initialize()
 {
 	// set the variables
 	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
@@ -107,7 +112,7 @@ HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
 	m_pEffect->GetTechnique()->GetPassByIndex(0)->GetDesc(&passDesc);
-	result = pDevice->CreateInputLayout(vertexDesc
+	result = Renderer::GetDevice()->CreateInputLayout(vertexDesc
 		, numElements
 		, passDesc.pIAInputSignature
 		, passDesc.IAInputSignatureSize
@@ -124,9 +129,17 @@ HRESULT PointCloud::Initialize(ID3D11Device* pDevice)
 	bd.MiscFlags = 0;
 	D3D11_SUBRESOURCE_DATA initData = { 0 };
 	initData.pSysMem = m_RenderPoints.data();
-	result = pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
+	result = Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 	if (FAILED(result))
 		return result;
 
 	return result;
+}
+
+void PointCloud::StartMarchingCubes() const
+{
+	MarchingCubes* pMarchingCubes = new MarchingCubes(this);
+	if (!pMarchingCubes->GenerateMesh())
+		std::cout << "Marching Cubes Generation failed";
+
 }

@@ -173,7 +173,7 @@ void IOFiles::ImportOBJData(const std::string& file, const std::string& fileName
 	}
 
 	SceneGraph::GetInstance()->AddObject(
-		new Mesh(m_pDevice, fileName, vertices, indices, pos)
+		new Mesh(fileName, vertices, pos)
 	);
 }
 
@@ -279,7 +279,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 
 
 	SceneGraph::GetInstance()->AddObject(
-		new Mesh(m_pDevice, fileName, vertices, indices, pos)
+		new Mesh(fileName, vertices, pos)
 	);
 }
 
@@ -379,7 +379,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 	}
 
 	SceneGraph::GetInstance()->AddObject(
-		new Mesh(m_pDevice, fileName, vertices, indices, pos)
+		new Mesh(fileName, vertices, pos)
 	);
 }
 
@@ -417,7 +417,7 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 
 		// create mesh
 		SceneGraph::GetInstance()->AddObject(
-			new PointCloud(m_pDevice, fileName, data, shape, pos)
+			new PointCloud(fileName, data, shape, pos)
 		);
 
 		f.close();

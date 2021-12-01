@@ -67,9 +67,6 @@
     <ClInclude Include="EVector4.h">
       <Filter>Engine\Math</Filter>
     </ClInclude>
-    <ClInclude Include="ERenderer.h">
-      <Filter>Engine\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="ETimer.h">
       <Filter>Engine\Helpers</Filter>
     </ClInclude>
@@ -142,11 +139,11 @@
     <ClInclude Include="Progress.h">
       <Filter>Engine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Engine\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ERenderer.cpp">
-      <Filter>Engine\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ETimer.cpp">
       <Filter>Engine\Helpers</Filter>
     </ClCompile>
@@ -208,6 +205,9 @@
       <Filter>Mesh Generation</Filter>
     </ClCompile>
     <ClCompile Include="Progress.cpp">
+      <Filter>Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

@@ -5,7 +5,7 @@
 class Effect final
 {
 public:
-	Effect(ID3D11Device* pDevice, const std::wstring& assetFile);
+	Effect(const std::wstring& assetFile);
 	~Effect();
 
 	ID3DX11Effect* GetEffect() const;
@@ -22,5 +22,5 @@ private:
 	uint32_t m_TechSize = 0;
 	uint32_t m_TechIndex = 0;
 
-	ID3DX11Effect* LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile) const;
+	ID3DX11Effect* LoadEffect(const std::wstring& assetFile) const;
 };

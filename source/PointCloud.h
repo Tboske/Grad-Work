@@ -8,8 +8,7 @@ using namespace Elite;
 class PointCloud final : public BaseObject
 {
 public:
-	PointCloud(ID3D11Device* pDevice
-		, const std::string& meshName
+	PointCloud(const std::string& meshName
 		, const std::vector<float>& pointCloud
 		, const std::vector<uint32_t>& shape
 		, const FPoint3& pos = { 0,0,0 }
@@ -20,7 +19,7 @@ public:
 	virtual void Update() override;
 	virtual void RenderUI() override;
 
-	const std::vector<FPoint3>& GetPoints() const { return m_RenderPoints; }
+	const std::vector<float>& GetPoints() const { return m_PointCloud; }
 	const std::vector<uint32_t>& GetShape() const { return m_Shape; }
 
 private:
@@ -30,8 +29,10 @@ private:
 	RGBColor m_PointColor = { 0.f, 1.f, 1.f };
 
 	std::vector<FPoint3> m_RenderPoints;
+	const std::vector<float> m_PointCloud;
 	const std::vector<uint32_t> m_Shape;
 
-	HRESULT Initialize(ID3D11Device* pDevice);
+	HRESULT Initialize();
+	void StartMarchingCubes() const;
 };
 

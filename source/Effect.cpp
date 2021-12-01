@@ -2,10 +2,11 @@
 #include "Effect.h"
 #include "SceneGraph.h"
 #include "Camera.h"
+#include "Renderer.h"
 
 
-Effect::Effect(ID3D11Device* pDevice, const std::wstring& assetFile)
-	: m_pEffect{ LoadEffect(pDevice, assetFile) }
+Effect::Effect(const std::wstring& assetFile)
+	: m_pEffect{ LoadEffect(assetFile)}
 	, m_TechSize{ 1 }
 {
 	m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
@@ -59,7 +60,7 @@ void Effect::UpdateMatrix(const Elite::FMatrix4& transform)
 	m_pMatWorldViewProjVariable->SetMatrix(&wVPmatrix[0][0]);
 }
 
-ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& assetFile) const
+ID3DX11Effect* Effect::LoadEffect(const std::wstring& assetFile) const
 {
 	HRESULT result = S_OK;
 	ID3D10Blob* pErrorBlob = nullptr;
@@ -76,7 +77,7 @@ ID3DX11Effect* Effect::LoadEffect(ID3D11Device* pDevice, const std::wstring& ass
 		nullptr,
 		shaderFlags,
 		0,
-		pDevice,
+		Renderer::GetDevice(),
 		&pEffect,
 		&pErrorBlob);
 

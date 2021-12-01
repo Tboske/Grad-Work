@@ -54,6 +54,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\School\Grad Work\Project\include\imgui-1.84.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -70,7 +71,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>../include/imgui-1.84.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,7 +101,6 @@
     <ClInclude Include="EPoint2.h" />
     <ClInclude Include="EPoint3.h" />
     <ClInclude Include="EPoint4.h" />
-    <ClInclude Include="ERenderer.h" />
     <ClInclude Include="ERGBColor.h" />
     <ClInclude Include="ETimer.h" />
     <ClInclude Include="EVector.h" />
@@ -115,6 +115,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PointCloud.h" />
     <ClInclude Include="Progress.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="UI.h" />
@@ -151,7 +152,6 @@
     <ClCompile Include="BaseObject.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Effect.cpp" />
-    <ClCompile Include="ERenderer.cpp" />
     <ClCompile Include="ETimer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MarchingCubes.cpp" />
@@ -163,6 +163,7 @@
     </ClCompile>
     <ClCompile Include="PointCloud.cpp" />
     <ClCompile Include="Progress.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UI.cpp" />

@@ -22,7 +22,7 @@ public:
 		FPoint3 Color;
 	};
 
-	Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const FPoint3& pos = { 0,0,0 });
+	Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos = { 0,0,0 });
 	virtual ~Mesh();
 
 	const std::vector<Vertex_Input>& GetVertexData() const { return m_Vertices; }
@@ -34,10 +34,8 @@ public:
 private:
 	ID3D11InputLayout* m_pVertexLayout = nullptr;
 	ID3D11Buffer* m_pVertexBuffer = nullptr;
-	ID3D11Buffer* m_pIndexBuffer = nullptr;
 	std::vector<Vertex_Input> m_Vertices;
-	std::vector<uint32_t> m_Indices;
 
-	HRESULT Initialize(ID3D11Device* pDevice, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices);
+	HRESULT Initialize(const std::vector<Vertex_Input>& vertices);
 };
 

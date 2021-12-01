@@ -3,7 +3,7 @@
 class UI final
 {
 public:
-	UI(SDL_Window* pWindow, ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext);
+	UI(SDL_Window* pWindow, ID3D11DeviceContext* pDeviceContext);
 	~UI();
 
 	void RenderUI(float);
@@ -17,7 +17,7 @@ private:
 		ImGuiWindowFlags_NoCollapse 
 	};
 
-	char m_ImportFile[128]{"test2"};
+	char m_ImportFile[128]{"test"};
 	char m_MeshName[64]{};
 	int m_SelectedFileType = 3;
 	const char* m_pFileTypes[4]{ ".obj", ".vtk", ".vvtk", ".var"};

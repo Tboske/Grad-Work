@@ -1,18 +1,20 @@
 #include "pch.h"
-
-//Project includes
-#include "ERenderer.h"
+#include "Renderer.h"
 #include "SceneGraph.h"
-#include "imgui.h"
-#include "backends/imgui_impl_sdl.h"
-#include "backends/imgui_impl_dx11.h"
+#include "Objects.h"
 
-Elite::Renderer::Renderer(SDL_Window * pWindow)
-	: m_pWindow{ pWindow }
-	, m_Width{}
-	, m_Height{}
-	, m_IsInitialized{ false }
+Renderer::~Renderer()
 {
+	delete m_pUI;
+	m_pUI = nullptr;
+
+	CleanUpDirectX();
+}
+
+void Renderer::InitializeImpl(SDL_Window* pWindow)
+{
+	m_pWindow = pWindow;
+
 	int width, height = 0;
 	SDL_GetWindowSize(pWindow, &width, &height);
 	m_Width = static_cast<uint32_t>(width);
@@ -22,29 +24,16 @@ Elite::Renderer::Renderer(SDL_Window * pWindow)
 	if (InitializeDirextX() == S_OK)
 		m_IsInitialized = true;
 
-	m_pUI = new UI(m_pWindow, m_pDevice, m_pDeviceContext);
+	m_pUI = new UI(m_pWindow, m_pDeviceContext);
 }
 
-Elite::Renderer::~Renderer()
+void Renderer::RenderImpl()
 {
-	delete m_pUI;
-	m_pUI = nullptr;
-
-	CleanUpDirectX();
-}
-
-ID3D11Device* Elite::Renderer::GetDevice() const
-{
-	return m_pDevice;
-}
-
-void Elite::Renderer::Render()
-{
-	if (!m_IsInitialized) 
+	if (!m_IsInitialized)
 		return;
 
 	// Clear Buffers
-	static const RGBColor clearColor{ 0.1f, 0.1f, 0.1f };
+	static const Elite::RGBColor clearColor{ 0.1f, 0.1f, 0.1f };
 	m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, &clearColor.r);
 	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
@@ -62,7 +51,7 @@ void Elite::Renderer::Render()
 	m_pSwapChain->Present(0, 0);
 }
 
-HRESULT Elite::Renderer::InitializeDirextX()
+HRESULT Renderer::InitializeDirextX()
 {
 	// Create device and device context
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -160,7 +149,7 @@ HRESULT Elite::Renderer::InitializeDirextX()
 	return S_OK;
 }
 
-void Elite::Renderer::CleanUpDirectX()
+void Renderer::CleanUpDirectX()
 {
 	m_pRenderTargetView->Release();
 	m_pRenderTargetView = nullptr;
@@ -179,7 +168,7 @@ void Elite::Renderer::CleanUpDirectX()
 
 	m_pDXGIFactory->Release();
 	m_pDXGIFactory = nullptr;
-	
+
 	if (m_pDeviceContext)
 	{
 		m_pDeviceContext->ClearState();

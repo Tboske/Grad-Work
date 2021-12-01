@@ -4,8 +4,9 @@
 #include <thread>
 #include "SceneGraph.h"
 #include "Progress.h"
+#include "Renderer.h"
 
-UI::UI(SDL_Window* pWindow, ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext)
+UI::UI(SDL_Window* pWindow, ID3D11DeviceContext* pDeviceContext)
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -17,7 +18,7 @@ UI::UI(SDL_Window* pWindow, ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceC
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplSDL2_InitForD3D(pWindow);
-	ImGui_ImplDX11_Init(pDevice, pDeviceContext);
+	ImGui_ImplDX11_Init(Renderer::GetDevice(), pDeviceContext);
 
 	// Style
 	ImGuiStyle& style = ImGui::GetStyle();

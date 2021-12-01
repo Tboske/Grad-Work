@@ -6,7 +6,7 @@ using namespace std::chrono;
 class Progress
 {
 public:
-	~Progress();
+	~Progress() {};
 	static void LoadingPopUp() { GetInstance()->LoadingPopUpImpl(); }
 
 	static void Start(const std::string& s) { GetInstance()->StartImpl(s); }

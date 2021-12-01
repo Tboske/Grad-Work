@@ -2,18 +2,16 @@
 #include "Mesh.h"
 #include "IOFiles.h"
 #include "SceneGraph.h"
+#include "Renderer.h"
 
-Mesh::Mesh(ID3D11Device* pDevice, const std::string& meshName, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices, const FPoint3& pos)
-	: BaseObject(pDevice, meshName, pos, L"Resources/Shader.fx")
+Mesh::Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos)
+	: BaseObject(meshName, pos, L"Resources/Shader.fx")
 {
-	Initialize(pDevice, vertices, indices);
+	Initialize(vertices);
 }
 
 Mesh::~Mesh()
 {
-	m_pIndexBuffer->Release();
-	m_pIndexBuffer = nullptr;
-
 	m_pVertexBuffer->Release();
 	m_pVertexBuffer = nullptr;
 
@@ -30,9 +28,6 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 	UINT offset = 0;
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
-	// Set index buffer
-	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
 	// Set the input layour
 	pDeviceContext->IASetInputLayout(m_pVertexLayout);
 
@@ -45,7 +40,7 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
 		m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
-		pDeviceContext->DrawIndexed((uint32_t)m_Indices.size(), 0, 0);
+		pDeviceContext->Draw(m_Vertices.size(), 0);
 	}
 }
 
@@ -70,10 +65,9 @@ void Mesh::RenderUI()
 	ImGui::PopID();
 }
 
-HRESULT Mesh::Initialize(ID3D11Device* pDevice, const std::vector<Vertex_Input>& vertices, const std::vector<uint32_t>& indices)
+HRESULT Mesh::Initialize(const std::vector<Vertex_Input>& vertices)
 {
 	m_Vertices = vertices;
-	m_Indices = indices;
 
 	// Create Vertex Layout
 	HRESULT result = S_OK;
@@ -98,7 +92,7 @@ HRESULT Mesh::Initialize(ID3D11Device* pDevice, const std::vector<Vertex_Input>&
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
 	m_pEffect->GetTechnique()->GetPassByIndex(0)->GetDesc(&passDesc);
-	result = pDevice->CreateInputLayout(vertexDesc, numElements, 
+	result = Renderer::GetDevice()->CreateInputLayout(vertexDesc, numElements,
 		passDesc.pIAInputSignature,
 		passDesc.IAInputSignatureSize,
 		&m_pVertexLayout);
@@ -114,18 +108,7 @@ HRESULT Mesh::Initialize(ID3D11Device* pDevice, const std::vector<Vertex_Input>&
 	bd.MiscFlags = 0;
 	D3D11_SUBRESOURCE_DATA initData = { 0 };
 	initData.pSysMem = vertices.data();
-	result = pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
-	if (FAILED(result))
-		return result;
-
-	// Create index buffer
-	bd.Usage = D3D11_USAGE_IMMUTABLE;
-	bd.ByteWidth = sizeof(uint32_t) * (uint32_t)indices.size();
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	initData.pSysMem = indices.data();
-	result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
+	result = Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 	if (FAILED(result))
 		return result;
 

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "BaseObject.h"
 
-BaseObject::BaseObject(ID3D11Device* pDevice, const std::string& meshName, const FPoint3& pos, const std::wstring& shader)
-	: m_pEffect{ new Effect(pDevice, shader) }
+BaseObject::BaseObject(const std::string& meshName, const FPoint3& pos, const std::wstring& shader)
+	: m_pEffect{ new Effect(shader) }
 	, m_Transform{ Elite::FMatrix4::Identity() }
 	, m_MeshName{ meshName }
 {

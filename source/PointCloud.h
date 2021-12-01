@@ -16,7 +16,6 @@ public:
 	virtual ~PointCloud();
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const override;
-	virtual void Update() override;
 	virtual void RenderUI() override;
 
 	const std::vector<float>& GetPoints() const { return m_PointCloud; }

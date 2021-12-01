@@ -44,10 +44,6 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 	}
 }
 
-void Mesh::Update()
-{
-}
-
 void Mesh::RenderUI()
 {
 	BaseObject::RenderUI();

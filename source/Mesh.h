@@ -28,7 +28,6 @@ public:
 	const std::vector<Vertex_Input>& GetVertexData() const { return m_Vertices; }
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const override;
-	virtual void Update() override;
 	virtual void RenderUI() override;
 
 private:

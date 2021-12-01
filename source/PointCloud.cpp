@@ -75,10 +75,6 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	}
 }
 
-void PointCloud::Update()
-{
-}
-
 void PointCloud::RenderUI()
 {
 	BaseObject::RenderUI();

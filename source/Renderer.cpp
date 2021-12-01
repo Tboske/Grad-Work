@@ -40,10 +40,8 @@ void Renderer::RenderImpl()
 
 	// Render
 	for (BaseObject* pMesh : SceneGraph::GetInstance()->GetObjects())
-	{
-		pMesh->Update();
 		pMesh->Render(m_pDeviceContext);
-	}
+	
 
 	m_pUI->RenderUI(float(m_Height));
 

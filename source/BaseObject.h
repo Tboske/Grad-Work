@@ -13,7 +13,6 @@ public:
 	virtual ~BaseObject();
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const;
-	virtual void Update() = 0;
 	virtual void RenderUI();
 
 	const std::string& GetMeshName() const { return m_MeshName; }

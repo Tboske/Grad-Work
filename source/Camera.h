@@ -25,7 +25,7 @@ private:
 	Elite::FMatrix4 m_ProjectionMatrix;
 	const float m_AspectRatio = 0.f;
 	const float m_Fov = 0.f;
-	const float m_SpeedModifier = 2.f;
+	const float m_SpeedModifier = 5.f;
 
 	//functions
 	void ReconstructONB(const Elite::FVector3& forward);

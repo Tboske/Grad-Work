@@ -444,11 +444,15 @@ void IOFiles::ReadVarHeader(std::ifstream& f, std::vector<uint32_t>& shape) cons
 	}
 	f.read((char*)&frameDur, sizeof(float));
 
-	if (shape.size() < 3)	// if the size is smaller, resize the vector to 3 size;
-		shape.resize(3, 1);
+	// this will make sure the shape size is always at least 3
+	if (shape.size() < 3)
+		shape.resize(3, 1); // default value is 1
+
+
 	// add the nfr to this vector
-	shape.push_back(nfr);
-	std::reverse(shape.begin(), shape.end());
+	std::reverse(shape.begin(), shape.end());	// reverse current shape (from kji to ijk)
+	shape.push_back(nfr);						// add the nfr to shape (ijkt) 
+	std::reverse(shape.begin(), shape.end());	// reverse this again (from ijkt to tkji)
 
 	for (uint32_t i : shape)
 	{

@@ -5,6 +5,7 @@
 
 PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
 	: BaseObject(pDevice, meshName, pos, L"Resources/PointShader.fx")
+	, m_Shape{ shape }
 {
 	// everything containing the rubbish value is not a piece of the pointcloud
 	m_RenderPoints.reserve(pointCloud.size());
@@ -30,10 +31,8 @@ PointCloud::PointCloud(ID3D11Device* pDevice, const std::string& meshName, const
 			}
 		}
 	}
-
 	Initialize(pDevice);
 }
-
 
 
 PointCloud::~PointCloud()
@@ -57,7 +56,7 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	const UINT offset = 0;
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
-	// Set the input layour
+	// Set the input layout
 	pDeviceContext->IASetInputLayout(m_pVertexLayout);
 
 	// Set the primitive topology

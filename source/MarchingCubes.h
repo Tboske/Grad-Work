@@ -4,15 +4,18 @@
 class MarchingCubes// : public IsoSurface
 {
 public:
-	MarchingCubes() = default;
+	MarchingCubes();
 	MarchingCubes(PointCloud* pc);
 
 	void SetPointCloud(PointCloud* pc) { m_pPointCloud = pc; }
 	Mesh* GetMesh() const { return m_pMesh; }
-	void GenerateMesh();
+	bool GenerateMesh();
 
 private:
 	PointCloud* m_pPointCloud = nullptr;
 	Mesh* m_pMesh = nullptr;
+
+
+	void Initialize();
 };
 

@@ -4,10 +4,12 @@
 #include "SceneGraph.h"
 #include "Renderer.h"
 
-Mesh::Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos)
+Mesh::Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos, const RGBColor color)
 	: BaseObject(meshName, pos, L"Resources/Shader.fx")
+	, m_Color{ color }
+	, m_Vertices{ vertices }
 {
-	Initialize(vertices);
+	Initialize();
 }
 
 Mesh::~Mesh()
@@ -40,7 +42,7 @@ void Mesh::Render(ID3D11DeviceContext* pDeviceContext) const
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
 		m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
-		pDeviceContext->Draw(m_Vertices.size(), 0);
+		pDeviceContext->Draw(UINT(m_Vertices.size()), 0);
 	}
 }
 
@@ -59,15 +61,23 @@ void Mesh::RenderUI()
 		m_Transform[1].y = scale[1] * scale[3];
 		m_Transform[2].z = scale[2] * scale[3];
 	ImGui::PopID();
+	ImGui::PushID((char*)this + 'c');
+	ImGui::Text("Color: ");
+	ImGui::SameLine();
+	if (ImGui::ColorEdit3(" ", &m_Color.r))
+		m_pColorEffectVariable->SetFloatVector(&m_Color.r);
+	ImGui::PopID();
 }
 
-HRESULT Mesh::Initialize(const std::vector<Vertex_Input>& vertices)
+HRESULT Mesh::Initialize()
 {
-	m_Vertices = vertices;
+	// set the variables
+	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
+	m_pColorEffectVariable->SetFloatVector(&m_Color.r);
 
 	// Create Vertex Layout
 	HRESULT result = S_OK;
-	static const uint32_t numElements{ 3 };
+	static const uint32_t numElements{ 2 };
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 
 	vertexDesc[0].SemanticName = "POSITION";
@@ -79,11 +89,6 @@ HRESULT Mesh::Initialize(const std::vector<Vertex_Input>& vertices)
 	vertexDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	vertexDesc[1].AlignedByteOffset = 12;
 	vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-
-	vertexDesc[2].SemanticName = "COLOR";
-	vertexDesc[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	vertexDesc[2].AlignedByteOffset = 24;
-	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
@@ -98,15 +103,17 @@ HRESULT Mesh::Initialize(const std::vector<Vertex_Input>& vertices)
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_IMMUTABLE;
-	bd.ByteWidth = sizeof(Vertex_Input) * (uint32_t)vertices.size();
+	bd.ByteWidth = sizeof(Vertex_Input) * (uint32_t)m_Vertices.size();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	bd.MiscFlags = 0;
 	D3D11_SUBRESOURCE_DATA initData = { 0 };
-	initData.pSysMem = vertices.data();
+	initData.pSysMem = m_Vertices.data();
 	result = Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 	if (FAILED(result))
 		return result;
 
 	return result;
 }
+
+

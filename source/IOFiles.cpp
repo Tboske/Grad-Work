@@ -200,7 +200,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 		size_t vertCount = std::stoi(line);
 		tempVerts.resize(vertCount);
 
-		Progress::ResetProgress("Importing Vertices");
+		Progress::ResetProgress(float(tempVerts.size()), "Importing Vertices");
 		for (size_t i = 0; i < tempVerts.size(); ++i)
 		{
 			FPoint3& vert = tempVerts[i];
@@ -210,7 +210,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 			vert.y /= 1000;
 			vert.z /= 1000;
 
-			Progress::SetValue(float(i) / tempVerts.size());
+			Progress::SetValue(float(i));
 		}
 		myFile.close();
 	}
@@ -231,7 +231,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 			tempIndices.reserve(tempIndices.size() + indCount);
 
 			std::string c;
-			Progress::ResetProgress("Importing Indices");
+			Progress::ResetProgress(float(tempIndices.size()), "Importing Indices");
 
 			for (size_t i = 0; i < indCount; ++i)
 			{
@@ -239,14 +239,14 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 				myFile >> c >> index.x >> index.y >> index.z;
 				tempIndices.push_back(index);
 
-				Progress::SetValue(float(i) / tempIndices.size());
+				Progress::SetValue(float(i));
 			}
 		}
 		myFile.close();
 	}
 
 
-	Progress::ResetProgress("Constructing Mesh");
+	Progress::ResetProgress(float(tempIndices.size()), "Constructing Mesh");
 	for (uint32_t i = 0; i < tempIndices.size(); ++i)
 	{
 		constexpr int vertsPerLoop = 3;
@@ -267,13 +267,11 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 		Normalize(normal);
 
 		// triangle
-		//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
-		FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
-		vertices.emplace_back(p0, -normal, color);
-		vertices.emplace_back(p1, -normal, color);
-		vertices.emplace_back(p2, -normal, color);
+		vertices.emplace_back(p0, -normal);
+		vertices.emplace_back(p1, -normal);
+		vertices.emplace_back(p2, -normal);
 
-		Progress::SetValue(float(i) / tempIndices.size());
+		Progress::SetValue(float(i));
 	}
 	
 
@@ -306,7 +304,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 		size_t vertCount = std::stoi(line);
 		tempVerts.resize(vertCount);
 
-		Progress::ResetProgress("Importing Vertices");
+		Progress::ResetProgress(float(tempVerts.size()), "Importing Vertices");
 		for (size_t i = 0; i < tempVerts.size(); ++i)
 		{
 			FPoint3& vert = tempVerts[i];
@@ -316,7 +314,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 			vert.y /= 1000;
 			vert.z /= 1000;
 
-			Progress::SetValue(float(i) / tempVerts.size());
+			Progress::SetValue(float(i));
 		}
 		myFile.close();
 	}
@@ -330,20 +328,20 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 			tempIndices.resize(indCount);
 
 			std::string c;
-			Progress::ResetProgress("Importing Indices");
+			Progress::ResetProgress(float(tempIndices.size()), "Importing Indices");
 
 			for (size_t i = 0; i < tempIndices.size(); ++i)
 			{
 				IPoint4& index = tempIndices[i].second;
 				myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
 
-				Progress::SetValue(float(i) / tempIndices.size());
+				Progress::SetValue(float(i));
 			}
 		}
 		myFile.close();
 	}
 
-	Progress::ResetProgress("Constructing Mesh");
+	Progress::ResetProgress(float(tempIndices.size()), "Constructing Mesh");
 	for (uint32_t i = 0; i < tempIndices.size(); ++i)
 	{
 		constexpr int vertsPerLoop = 6;
@@ -365,17 +363,15 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 		Normalize(normal);
 
 		// triangle
-		//FPoint3 color{ RandomFloat(), RandomFloat(), RandomFloat() };
-		FPoint3 color{ 0.9411f, 0.5019f, 0.5019f };
-		vertices.emplace_back(p0, -normal, color);
-		vertices.emplace_back(p1, -normal, color);
-		vertices.emplace_back(p2, -normal, color);
+		vertices.emplace_back(p0, -normal);
+		vertices.emplace_back(p1, -normal);
+		vertices.emplace_back(p2, -normal);
 		// triangle2
-		vertices.emplace_back(p1, -normal, color);
-		vertices.emplace_back(p3, -normal, color);
-		vertices.emplace_back(p2, -normal, color);
+		vertices.emplace_back(p1, -normal);
+		vertices.emplace_back(p3, -normal);
+		vertices.emplace_back(p2, -normal);
 
-		Progress::SetValue(float(i) / tempIndices.size());
+		Progress::SetValue(float(i));
 	}
 
 	SceneGraph::GetInstance()->AddObject(

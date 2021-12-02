@@ -9,10 +9,11 @@ public:
 	~Progress() {};
 	static void LoadingPopUp() { GetInstance()->LoadingPopUpImpl(); }
 
-	static void Start(const std::string& s) { GetInstance()->StartImpl(s); }
-	static void ResetProgress(const std::string& s = "<Unspecified>") { GetInstance()->ResetProgressImpl(s); }
+	static void Start(const std::string& s, float maxVal = 1.f) { GetInstance()->StartImpl(s, maxVal); }
+	static void ResetProgress(float maxValue, const std::string& s = "<Unspecified>") { GetInstance()->ResetProgressImpl(maxValue, s); }
 	static void SetInactive() { GetInstance()->m_Active = 0.f; }
-	static void SetValue(float value) { GetInstance()->m_Value = value; }
+	static void SetValue(float value) { GetInstance()->SetValueImpl(value); }
+
 
 private:
 	Progress() = default;
@@ -21,14 +22,17 @@ private:
 		static Progress* pInstance{ new Progress() };
 		return pInstance;
 	}
-
-	void LoadingPopUpImpl() const;
-	void StartImpl(const std::string& s);
-	void ResetProgressImpl(const std::string& s);
-
 	bool m_Active = false;
 	float m_Value = 0.f;
+	float m_MaxValue = 1.f;
 	std::string m_Description;
 	steady_clock::time_point m_StartTime;	
+
+
+
+	void LoadingPopUpImpl() const;
+	void StartImpl(const std::string& s, float maxVal);
+	void ResetProgressImpl(float maxVal, const std::string& s);
+	void SetValueImpl(float value);
 };
 

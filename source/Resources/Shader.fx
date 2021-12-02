@@ -11,9 +11,11 @@ float4x4	gWorldViewProj	: worldViewProjection;
 float4x4	gWorldMatrix	: worldMatrix;
 float4x4	gViewInverse	: viewInverseMatrix;
 
+float3		gColor;
 float3		gLightDirection = float3(0.577f, -0.577f, 0.577f);
 float		gPi = 3.1415927f;
 float		gLightIntensity = 7.f;
+
 
 
 // ==================================================================================
@@ -36,14 +38,12 @@ struct VS_INPUT
 {
 	float3 Position : POSITION;
 	float3 Normal	: NORMAL;
-	float3 Color	: COLOR;
 };
 
 struct VS_OUTPUT
 {
 	float4 Position		: SV_POSITION;
 	float3 Normal		: NORMAL;
-	float3 Color		: COLOR;
 };
 
 
@@ -58,7 +58,6 @@ VS_OUTPUT VS(VS_INPUT input)
 	// transform the position with worldViewProjmatrix
 	output.Position = mul(float4(input.Position, 1.f), gWorldViewProj);
 	output.Normal = mul(input.Normal, (float3x3)gWorldMatrix);
-	output.Color = input.Color;
 
 	return output;
 }
@@ -96,7 +95,7 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	const float observedArea = GetObservedArea(input.Normal);
 
 
-    return float4(abs(input.Color), 1.0f)  * observedArea;
+    return float4(abs(gColor), 1.0f) * observedArea;
 }
 
 

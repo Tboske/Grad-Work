@@ -10,19 +10,18 @@ class Mesh final : public BaseObject
 public:
 	struct Vertex_Input
 	{
-		Vertex_Input(const FPoint3& pos, const FVector3& normal, const Elite::FPoint3& color = {1,1,1})
+		Vertex_Input(const FPoint3& pos, const FVector3& normal)
 		{
 			Position = pos;
 			Normal = normal;
-			Color = color;
 		}
+		//void GenerateNormals();
 
 		FPoint3 Position;
 		FVector3 Normal;
-		FPoint3 Color;
 	};
 
-	Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos = { 0,0,0 });
+	Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos = {0,0,0}, const RGBColor color = { 1,1,1 });
 	virtual ~Mesh();
 
 	const std::vector<Vertex_Input>& GetVertexData() const { return m_Vertices; }
@@ -34,7 +33,9 @@ private:
 	ID3D11InputLayout* m_pVertexLayout = nullptr;
 	ID3D11Buffer* m_pVertexBuffer = nullptr;
 	std::vector<Vertex_Input> m_Vertices;
+	ID3DX11EffectVectorVariable* m_pColorEffectVariable = nullptr;
+	RGBColor m_Color;
 
-	HRESULT Initialize(const std::vector<Vertex_Input>& vertices);
+	HRESULT Initialize();
 };
 

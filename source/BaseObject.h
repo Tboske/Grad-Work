@@ -16,6 +16,7 @@ public:
 	virtual void RenderUI();
 
 	const std::string& GetMeshName() const { return m_MeshName; }
+	Elite::FPoint3 GetPosition() const { return Elite::FPoint3(m_Transform[3].xyz); }
 
 protected:
 	Effect* m_pEffect = nullptr;

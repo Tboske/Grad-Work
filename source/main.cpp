@@ -17,6 +17,7 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "IOFiles.h"
+#include "objects.h"
 
 void ShutDown(SDL_Window* pWindow)
 {
@@ -53,8 +54,8 @@ int main(int argc, char* args[])
 
 	// Initialize SceneGraph
 	SceneGraph* scene = SceneGraph::GetInstance();
-	scene->SetCamera(new Camera(Elite::FPoint3(0.f, 10.f, 100.f), Elite::FVector3(0.f, 0.f, 1.f), (float)width / (float)height, 90.f, 0.1f, 10000.f)); // in degrees
-
+	scene->SetCamera(new Camera(Elite::FPoint3(0.5f, 1.5f, 1.529541f), Elite::FVector3(0.f, 0.f, 1.f), (float)width / (float)height, 90.f, 0.1f, 10000.f)); // in degrees
+	
 	//Start loop
 	pTimer->Start();
 	float printTimer = 0.f;

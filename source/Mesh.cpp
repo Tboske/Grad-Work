@@ -12,6 +12,14 @@ Mesh::Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertice
 	Initialize();
 }
 
+Mesh::Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FMatrix4& transform)
+	: BaseObject(meshName, transform, L"Resources/Shader.fx")
+	, m_Color{ 0.75f, 0.4f, 0.4f }
+	, m_Vertices{ vertices }
+{
+	Initialize();
+}
+
 Mesh::~Mesh()
 {
 	m_pVertexBuffer->Release();
@@ -50,17 +58,6 @@ void Mesh::RenderUI()
 {
 	BaseObject::RenderUI();
 
-	// scale of the object
-	ImGui::PushID((char*)this + 's');
-		float scale[4] = { m_Transform[0].x, m_Transform[1].y, m_Transform[2].z, 1.f };
-		ImGui::Text("Scale: ");
-		ImGui::SameLine();
-		ImGui::DragFloat4("", scale, 0.01f, -FLT_MAX, +FLT_MAX);
-
-		m_Transform[0].x = scale[0] * scale[3];
-		m_Transform[1].y = scale[1] * scale[3];
-		m_Transform[2].z = scale[2] * scale[3];
-	ImGui::PopID();
 	ImGui::PushID((char*)this + 'c');
 	ImGui::Text("Color: ");
 	ImGui::SameLine();

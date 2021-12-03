@@ -56,7 +56,7 @@ void MarchingCubes::GenerateMesh()
 	SceneGraph::GetInstance()->AddObject(new Mesh(
 		m_pPointCloud->GetMeshName() + "_Isosurface"
 		, vertices
-		, m_pPointCloud->GetPosition()
+		, m_pPointCloud->GetTransform()
 	));
 }
 

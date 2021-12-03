@@ -36,6 +36,38 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 	Initialize();
 }
 
+PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FMatrix4& transform)
+	: BaseObject(meshName, transform, L"Resources/PointShader.fx")
+	, m_PointCloud{ pointCloud }
+	, m_Shape{ shape }
+{
+	// everything containing the rubbish value is not a piece of the pointcloud
+	m_RenderPoints.reserve(pointCloud.size());
+
+	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
+	{
+		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]];
+		for (uint32_t z = 0; z < shape[1]; ++z)
+		{
+			for (uint32_t y = 0; y < shape[2]; ++y)
+			{
+				for (uint32_t x = 0; x < shape[3]; ++x)
+				{
+					// this calculates the 1d array position
+					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
+
+					// this should be removed eventually
+					if (m_RubbishValue >= pointCloud[p])
+						continue;
+
+					m_RenderPoints.emplace_back(FPoint3{ float(x), float(y), float(z) }, pointCloud[p]);
+				}
+			}
+		}
+	}
+	Initialize();
+}
+
 PointCloud::~PointCloud()
 {
 	m_pVertexBuffer->Release();

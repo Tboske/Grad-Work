@@ -8,11 +8,8 @@ using namespace Elite;
 class PointCloud final : public BaseObject
 {
 public:
-	PointCloud(const std::string& meshName
-		, const std::vector<float>& pointCloud
-		, const std::vector<uint32_t>& shape
-		, const FPoint3& pos = { 0,0,0 }
-	);
+	PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos = { 0,0,0 });
+	PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FMatrix4& transform);
 	virtual ~PointCloud();
 
 	virtual void Render(ID3D11DeviceContext* pDeviceContext) const override;

@@ -21,7 +21,8 @@ public:
 		FVector3 Normal;
 	};
 
-	Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos = {0,0,0}, const RGBColor color = { 0.75f, 0.4f, 0.4f });
+	Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos = { 0,0,0 }, const RGBColor color = { 0.75f, 0.4f, 0.4f });
+	Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FMatrix4& transform);
 	virtual ~Mesh();
 
 	const std::vector<Vertex_Input>& GetVertexData() const { return m_Vertices; }

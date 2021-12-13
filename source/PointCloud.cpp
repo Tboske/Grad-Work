@@ -9,30 +9,7 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 	, m_PointCloud{ pointCloud }
 	, m_Shape{ shape }
 {
-	// everything containing the rubbish value is not a piece of the pointcloud
-	m_RenderPoints.reserve(pointCloud.size());
-
-	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
-	{
-		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]];
-		for (uint32_t z = 0; z < shape[1]; ++z)
-		{
-			for (uint32_t y = 0; y < shape[2]; ++y)
-			{
-				for (uint32_t x = 0; x < shape[3]; ++x)
-				{
-					// this calculates the 1d array position
-					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
-
-					// this should be removed eventually
-					if (m_RubbishValue >= pointCloud[p])
-						continue;
-
-					m_RenderPoints.emplace_back(FPoint3{ float(x), float(y), float(z) }, pointCloud[p]);
-				}
-			}
-		}
-	}
+	InitPointCloud(pointCloud, shape);
 	Initialize();
 }
 
@@ -41,30 +18,7 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 	, m_PointCloud{ pointCloud }
 	, m_Shape{ shape }
 {
-	// everything containing the rubbish value is not a piece of the pointcloud
-	m_RenderPoints.reserve(pointCloud.size());
-
-	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
-	{
-		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]];
-		for (uint32_t z = 0; z < shape[1]; ++z)
-		{
-			for (uint32_t y = 0; y < shape[2]; ++y)
-			{
-				for (uint32_t x = 0; x < shape[3]; ++x)
-				{
-					// this calculates the 1d array position
-					const uint32_t p = (t * shape[1] * shape[2] * shape[3]) + (z * shape[2] * shape[3]) + (y * shape[3]) + x;
-
-					// this should be removed eventually
-					if (m_RubbishValue >= pointCloud[p])
-						continue;
-
-					m_RenderPoints.emplace_back(FPoint3{ float(x), float(y), float(z) }, pointCloud[p]);
-				}
-			}
-		}
-	}
+	InitPointCloud(pointCloud, shape);
 	Initialize();
 }
 
@@ -85,7 +39,7 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	BaseObject::Render(pDeviceContext);
 
 	// Set vertex buffer
-	const UINT stride = sizeof(PointInfo);
+	const UINT stride = sizeof(CubeInfo);
 	const UINT offset = 0;
 	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
@@ -115,6 +69,13 @@ void PointCloud::RenderUI()
 		if (ImGui::ColorEdit3(" ", &m_PointColor.r))
 			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
 	ImGui::PopID();
+	ImGui::PushID((char*)this + 'r');
+		ImGui::Text("Color: ");
+		ImGui::SameLine();
+		if (ImGui::DragFloat(" ", &m_RubbishValue, 0.05f, 0,1))
+			m_pRubbishEffectVariable->SetFloat(m_RubbishValue);
+	ImGui::PopID();
+
 	if (ImGui::Button("GenerateMesh"))
 		StartMarchingCubes();
 }
@@ -129,7 +90,7 @@ HRESULT PointCloud::Initialize()
 
 	// Create Vertex Layout
 	HRESULT result = S_OK;
-	static const uint32_t numElements{ 2 };
+	static const uint32_t numElements{ 3 };
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 
 	vertexDesc[0].SemanticName = "POSITION";
@@ -138,9 +99,14 @@ HRESULT PointCloud::Initialize()
 	vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	vertexDesc[1].SemanticName = "VALUE";
-	vertexDesc[1].Format = DXGI_FORMAT_R32_FLOAT;
+	vertexDesc[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	vertexDesc[1].AlignedByteOffset = 12;
 	vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+
+	vertexDesc[2].SemanticName = "VALUESECOND";
+	vertexDesc[2].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	vertexDesc[2].AlignedByteOffset = 28;
+	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
@@ -156,7 +122,7 @@ HRESULT PointCloud::Initialize()
 	// Create vertex buffer
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_IMMUTABLE;
-	bd.ByteWidth = sizeof(PointInfo) * (uint32_t)m_RenderPoints.size();
+	bd.ByteWidth = sizeof(CubeInfo) * (uint32_t)m_RenderPoints.size();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	bd.MiscFlags = 0;
@@ -167,6 +133,33 @@ HRESULT PointCloud::Initialize()
 		return result;
 
 	return result;
+}
+
+void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape)
+{
+	// everything containing the rubbish value is not a piece of the pointcloud
+	m_RenderPoints.reserve(pointCloud.size());
+
+	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
+	{
+		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]];
+		for (uint32_t z = 0; z < shape[1]; ++z)
+		{
+			for (uint32_t y = 0; y < shape[2]; ++y)
+			{
+				for (uint32_t x = 0; x < shape[3]; ++x)
+				{
+					m_RenderPoints.emplace_back(
+						FPoint3{ float(x), float(y), float(z) }					
+						, FPoint4{ GetValue( 0, z    , y    , x    ), GetValue( 0, z    , y    , x + 1)
+								 , GetValue( 0, z    , y + 1, x + 1), GetValue( 0, z    , y + 1, x    ) }
+						, FPoint4{ GetValue( 0, z + 1, y    , x    ), GetValue( 0, z + 1, y    , x + 1)
+								 , GetValue( 0, z + 1, y + 1, x + 1), GetValue( 0, z + 1, y + 1, x    ) }
+					);
+				}
+			}
+		}
+	}
 }
 
 void PointCloud::StartMarchingCubes() const

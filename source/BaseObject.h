@@ -25,5 +25,4 @@ protected:
 private:
 	FMatrix4 m_Transform;
 	std::string m_MeshName;
-	FPoint3 m_Rotation = {0,0,0};
 };

@@ -40,7 +40,7 @@ void UI::RenderUI(float height)
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 
 	ImGui::Begin("test", NULL, m_WindowFlags);
 	{
@@ -51,7 +51,6 @@ void UI::RenderUI(float height)
 		if (ImGui::BeginTabBar("Tab"))
 		{
 			ImportTab();
-			SettingsTab();
 			ExportTab();
 			MeshTab();
 
@@ -97,17 +96,6 @@ void UI::ExportTab()
 		if (ImGui::Button("Export!", { -1, 25 }))
 			IOFiles::ExportMesh((Mesh*)SceneGraph::GetInstance()->GetObjects()[0], m_ExportLocation);
 
-		ImGui::EndTabItem();
-	}
-}
-
-void UI::SettingsTab()
-{
-	if (ImGui::BeginTabItem("Settings"))
-	{
-		ImGui::Combo("Algorithm", &m_SelectedAlgorithm, m_pAlgorithms, IM_ARRAYSIZE(m_pAlgorithms));
-		//if (ImGui::Button("Generate", { -1, 25 }));
-		//	call the generate function here;
 		ImGui::EndTabItem();
 	}
 }

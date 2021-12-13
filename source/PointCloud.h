@@ -19,12 +19,26 @@ public:
 	const std::vector<uint32_t>& GetShape() const { return m_Shape; }
 	float GetRubbishValue() const { return m_RubbishValue; }
 
-private:
-	struct PointInfo 
+	float GetValue(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const
 	{
-		PointInfo(FPoint3 p, float v) : pos{ p }, value{ v } {}
+		// return rubbish value in case one of the indices are out of bounds
+		if (z >= m_Shape[1] || y >= m_Shape[2] || x >= m_Shape[3])
+			return m_RubbishValue;
+
+		uint32_t c = (t * m_Shape[1] * m_Shape[2] * m_Shape[3])
+			+ (z * m_Shape[2] * m_Shape[3])
+			+ (y * m_Shape[3])
+			+ x;
+
+		return m_PointCloud[c];
+	}
+private:
+	struct CubeInfo 
+	{
+		CubeInfo(FPoint3 p, FPoint4 v, FPoint4 v2) : pos{ p }, values{ v }, values2{ v2 } {}
 		FPoint3 pos;
-		float value;
+		FPoint4 values;
+		FPoint4 values2;
 	};
 
 	ID3D11InputLayout* m_pVertexLayout = nullptr;
@@ -34,11 +48,12 @@ private:
 	ID3DX11EffectScalarVariable* m_pRubbishEffectVariable = nullptr;
 	float m_RubbishValue = 0.f;
 
-	std::vector<PointInfo> m_RenderPoints;
+	std::vector<CubeInfo> m_RenderPoints;
 	std::vector<float> m_PointCloud;
 	std::vector<uint32_t> m_Shape;
 
 	HRESULT Initialize();
+	void InitPointCloud(const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape);
 	void StartMarchingCubes() const;
 };
 

@@ -35,7 +35,6 @@ private:
 // Functions
 	void ImportTab();
 	void ExportTab();
-	void SettingsTab();
 	void MeshTab() const;
 };
 

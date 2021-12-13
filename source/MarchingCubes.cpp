@@ -8,8 +8,6 @@
 
 MarchingCubes::MarchingCubes(const PointCloud* pPointCloud)
 	: m_pPointCloud{ pPointCloud }
-	, m_Points{ pPointCloud->GetPoints() }
-	, m_Shape{ pPointCloud->GetShape() }
 	, m_RubbishValue{ pPointCloud->GetRubbishValue() }
 {
 }
@@ -17,6 +15,8 @@ MarchingCubes::MarchingCubes(const PointCloud* pPointCloud)
 void MarchingCubes::GenerateMesh()
 {
 	std::vector<Mesh::Vertex_Input> vertices;
+
+	const std::vector<uint32_t>& m_Shape = m_pPointCloud->GetShape();
 	
 	Progress::Start("Running Marching Cubes", float(m_Shape[1] * m_Shape[2] * m_Shape[3]));
 	FPoint3 pos;
@@ -62,20 +62,15 @@ void MarchingCubes::GenerateMesh()
 
 unsigned char MarchingCubes::GetCubeFillID(uint32_t z, uint32_t y, uint32_t x)
 {
-	std::bitset<8> c;                                                   /*			 6 +----------+	7																	*/                                    
-		c[0] = m_Points[GetIndex(z    , y    , x    )] > m_RubbishValue;/*			   |\         |\																	*/
-		c[1] = m_Points[GetIndex(z    , y    , x + 1)] > m_RubbishValue;/*			   | \        | \																	*/
-		c[2] = m_Points[GetIndex(z    , y + 1, x + 1)] > m_RubbishValue;/*			   |2 +----------+ 3																*/
-		c[3] = m_Points[GetIndex(z    , y + 1, x    )] > m_RubbishValue;/*			   |  |       |  |																	*/
-		c[4] = m_Points[GetIndex(z + 1, y    , x    )] > m_RubbishValue;/*			 4 +--|-------+ 5|																	*/
-		c[5] = m_Points[GetIndex(z + 1, y    , x + 1)] > m_RubbishValue;/*			    \ |        \ |																	*/
-		c[6] = m_Points[GetIndex(z + 1, y + 1, x + 1)] > m_RubbishValue;/*			     \|         \|																	*/
-		c[7] = m_Points[GetIndex(z + 1, y + 1, x    )] > m_RubbishValue;/*			    0 +----------+ 1																*/
+	std::bitset<8> c;																/*			 6 +----------+	7																	*/                                    
+		c[0] = m_pPointCloud->GetValue( 0, z    , y    , x    ) > m_RubbishValue;	/*			   |\         |\																	*/
+		c[1] = m_pPointCloud->GetValue( 0, z    , y    , x + 1) > m_RubbishValue;	/*			   | \        | \																	*/
+		c[2] = m_pPointCloud->GetValue( 0, z    , y + 1, x + 1) > m_RubbishValue;	/*			   |2 +----------+ 3																*/
+		c[3] = m_pPointCloud->GetValue( 0, z    , y + 1, x    ) > m_RubbishValue;	/*			   |  |       |  |																	*/
+		c[4] = m_pPointCloud->GetValue( 0, z + 1, y    , x    ) > m_RubbishValue;	/*			 4 +--|-------+ 5|																	*/
+		c[5] = m_pPointCloud->GetValue( 0, z + 1, y    , x + 1) > m_RubbishValue;	/*			    \ |        \ |																	*/
+		c[6] = m_pPointCloud->GetValue( 0, z + 1, y + 1, x + 1) > m_RubbishValue;	/*			     \|         \|																	*/
+		c[7] = m_pPointCloud->GetValue( 0, z + 1, y + 1, x    ) > m_RubbishValue;	/*			    0 +----------+ 1																*/
 																		
 	return static_cast<unsigned char>(c.to_ulong());
-}
-
-uint32_t MarchingCubes::GetIndex(uint32_t z, uint32_t y, uint32_t x)
-{
-	return uint32_t((z * m_Shape[2] * m_Shape[3]) + (y * m_Shape[3]) + x);
 }

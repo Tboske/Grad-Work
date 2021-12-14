@@ -168,14 +168,6 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Resources\MarchingCubesShader.fx" />
-    <FxCompile Include="Resources\PointShader.fx" />
-    <FxCompile Include="Resources\Shader.fx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Import\test.var" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

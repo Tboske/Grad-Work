@@ -23,9 +23,6 @@
     <Filter Include="Mesh Generation">
       <UniqueIdentifier>{bb265b4d-f0c9-4708-829c-0812dad20d44}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Resources">
-      <UniqueIdentifier>{6f94002c-750c-4aeb-8a3b-dbb2bab95963}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EMath.h">
@@ -213,21 +210,5 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Engine\Renderer</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Resources\MarchingCubesShader.fx">
-      <Filter>Engine\Resources</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\PointShader.fx">
-      <Filter>Engine\Resources</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shader.fx">
-      <Filter>Engine\Resources</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Import\test.var">
-      <Filter>Engine\Resources</Filter>
-    </None>
   </ItemGroup>
 </Project>

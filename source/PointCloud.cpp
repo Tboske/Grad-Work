@@ -152,6 +152,7 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 			{
 				for (uint32_t x = 0; x < shape[3]; ++x)
 				{
+
 					CubeInfo ci;
 						ci.pos = FPoint3{ float(x), float(y), float(z) };
 						ci.values[0] = GetValue(t, z    , y    , x	  );

@@ -35,10 +35,8 @@ public:
 private:
 	struct CubeInfo 
 	{
-		CubeInfo(FPoint3 p, FPoint4 v, FPoint4 v2) : pos{ p }, values{ v }, values2{ v2 } {}
-		FPoint3 pos;
-		FPoint4 values;
-		FPoint4 values2;
+		FPoint3 pos = {0,0,0};
+		float values[8] = {};
 	};
 
 	ID3D11InputLayout* m_pVertexLayout = nullptr;

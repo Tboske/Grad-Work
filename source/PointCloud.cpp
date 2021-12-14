@@ -3,9 +3,10 @@
 #include "MarchingCubes.h"
 #include "Renderer.h"
 #include <thread>
+#include "MarchTable.h"
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
-	: BaseObject(meshName, pos, L"Resources/PointShader.fx")
+	: BaseObject(meshName, pos, L"Resources/MarchingCubesShader.fx")
 	, m_PointCloud{ pointCloud }
 	, m_Shape{ shape }
 {
@@ -47,7 +48,8 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	pDeviceContext->IASetInputLayout(m_pVertexLayout);
 
 	// Set the primitive topology
-	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	//pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Render a triangle
 	D3DX11_TECHNIQUE_DESC techDesc;
@@ -70,9 +72,9 @@ void PointCloud::RenderUI()
 			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
 	ImGui::PopID();
 	ImGui::PushID((char*)this + 'r');
-		ImGui::Text("Color: ");
+		ImGui::Text("RubbishValue: ");
 		ImGui::SameLine();
-		if (ImGui::DragFloat(" ", &m_RubbishValue, 0.05f, 0,1))
+		if (ImGui::DragFloat(" ", &m_RubbishValue, 0.001f))
 			m_pRubbishEffectVariable->SetFloat(m_RubbishValue);
 	ImGui::PopID();
 
@@ -86,7 +88,7 @@ HRESULT PointCloud::Initialize()
 	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
 	m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
 	m_pRubbishEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gRubbishValue")->AsScalar();
-	m_pRubbishEffectVariable->SetFloat(m_RubbishValue);
+	m_pRubbishEffectVariable->SetFloat(m_RubbishValue);	
 
 	// Create Vertex Layout
 	HRESULT result = S_OK;
@@ -105,7 +107,7 @@ HRESULT PointCloud::Initialize()
 
 	vertexDesc[2].SemanticName = "VALUESECOND";
 	vertexDesc[2].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	vertexDesc[2].AlignedByteOffset = 28;
+	vertexDesc[2].AlignedByteOffset = 12;
 	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// Create the input layout
@@ -142,20 +144,26 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 
 	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
 	{
-		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]];
+		// we add just this little bit to the m_RubbishValue, to prevent any rendering problems
+		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]] + 0.001f;
 		for (uint32_t z = 0; z < shape[1]; ++z)
 		{
 			for (uint32_t y = 0; y < shape[2]; ++y)
 			{
 				for (uint32_t x = 0; x < shape[3]; ++x)
 				{
-					m_RenderPoints.emplace_back(
-						FPoint3{ float(x), float(y), float(z) }					
-						, FPoint4{ GetValue( 0, z    , y    , x    ), GetValue( 0, z    , y    , x + 1)
-								 , GetValue( 0, z    , y + 1, x + 1), GetValue( 0, z    , y + 1, x    ) }
-						, FPoint4{ GetValue( 0, z + 1, y    , x    ), GetValue( 0, z + 1, y    , x + 1)
-								 , GetValue( 0, z + 1, y + 1, x + 1), GetValue( 0, z + 1, y + 1, x    ) }
-					);
+					CubeInfo ci;
+						ci.pos = FPoint3{ float(x), float(y), float(z) };
+						ci.values[0] = GetValue(t, z    , y    , x	  );
+						ci.values[1] = GetValue(t, z    , y    , x + 1);
+						ci.values[2] = GetValue(t, z    , y + 1, x + 1);
+						ci.values[3] = GetValue(t, z    , y + 1, x    );
+						ci.values[4] = GetValue(t, z + 1, y    , x    ); 
+						ci.values[5] = GetValue(t, z + 1, y    , x + 1);
+						ci.values[6] = GetValue(t, z + 1, y + 1, x + 1); 
+						ci.values[7] = GetValue(t, z + 1, y + 1, x    );
+
+					m_RenderPoints.push_back(ci);
 				}
 			}
 		}

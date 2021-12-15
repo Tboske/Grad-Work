@@ -68,20 +68,20 @@ HRESULT Renderer::InitializeDirextX()
 
 	// create swapchain descriptor
 	DXGI_SWAP_CHAIN_DESC swapChainDesc{};
-	swapChainDesc.BufferDesc.Width = m_Width;
-	swapChainDesc.BufferDesc.Height = m_Height;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 1;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 60;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.Windowed = true;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags = 0;
+		swapChainDesc.BufferDesc.Width = m_Width;
+		swapChainDesc.BufferDesc.Height = m_Height;
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 1;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = 60;
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = 1;
+		swapChainDesc.Windowed = true;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		swapChainDesc.Flags = 0;
 
 	// Get tge gandle HWND from the SDL backbuffer
 	SDL_SysWMinfo sysWMInfo{};
@@ -96,23 +96,23 @@ HRESULT Renderer::InitializeDirextX()
 
 	// Create the Depth/Stencil buffer and view
 	D3D11_TEXTURE2D_DESC depthStencilDesc{};
-	depthStencilDesc.Width = m_Width;
-	depthStencilDesc.Height = m_Height;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count = 1;
-	depthStencilDesc.SampleDesc.Quality = 0;
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
+		depthStencilDesc.Width = m_Width;
+		depthStencilDesc.Height = m_Height;
+		depthStencilDesc.MipLevels = 1;
+		depthStencilDesc.ArraySize = 1;
+		depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depthStencilDesc.SampleDesc.Count = 1;
+		depthStencilDesc.SampleDesc.Quality = 0;
+		depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+		depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		depthStencilDesc.CPUAccessFlags = 0;
+		depthStencilDesc.MiscFlags = 0;
 
 	// Create resource view Depth/Stencil Buffer
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
-	depthStencilViewDesc.Format = depthStencilDesc.Format;
-	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	depthStencilViewDesc.Texture2D.MipSlice = 0;
+		depthStencilViewDesc.Format = depthStencilDesc.Format;
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		depthStencilViewDesc.Texture2D.MipSlice = 0;
 
 	// Create resource view
 	result = m_pDevice->CreateTexture2D(&depthStencilDesc, 0, &m_pDepthStencilBuffer);
@@ -136,12 +136,12 @@ HRESULT Renderer::InitializeDirextX()
 
 	// Set the Viewport
 	D3D11_VIEWPORT viewPort{};
-	viewPort.Width = static_cast<float>(m_Width);
-	viewPort.Height = static_cast<float>(m_Height);
-	viewPort.TopLeftX = 0.f;
-	viewPort.TopLeftY = 0.f;
-	viewPort.MinDepth = 0.f;
-	viewPort.MaxDepth = 1.f;
+		viewPort.Width = static_cast<float>(m_Width);
+		viewPort.Height = static_cast<float>(m_Height);
+		viewPort.TopLeftX = 0.f;
+		viewPort.TopLeftY = 0.f;
+		viewPort.MinDepth = 0.f;
+		viewPort.MaxDepth = 1.f;
 	m_pDeviceContext->RSSetViewports(1, &viewPort);
 
 	return S_OK;

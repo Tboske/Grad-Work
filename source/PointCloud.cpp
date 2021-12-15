@@ -6,12 +6,14 @@
 #include "MarchTable.h"
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
-	: BaseObject(meshName, pos, L"Resources/PointShader.fx")	// if you change this to the marching cubes shader, dont forget to change topology in the render function
-	, m_PointCloud{ pointCloud }
+	: BaseObject(meshName, pos, L"Resources/MarchingCubesShader.fx")	// if you change this to the marching cubes shader, dont forget to change topology in the render function
+	, m_PointCloud{ pointCloud }		// MarchingCubesShader
 	, m_Shape{ shape }
 {
 	InitPointCloud(pointCloud, shape);
 	Initialize();
+
+	//StartMarchingCubes();
 }
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FMatrix4& transform)
@@ -25,6 +27,9 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 
 PointCloud::~PointCloud()
 {
+	delete m_pTriangulationLUT;
+	m_pTriangulationLUT = nullptr;
+
 	m_pVertexBuffer->Release();
 	m_pVertexBuffer = nullptr;
 
@@ -71,12 +76,6 @@ void PointCloud::RenderUI()
 		if (ImGui::ColorEdit3(" ", &m_PointColor.r))
 			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
 	ImGui::PopID();
-	ImGui::PushID((char*)this + 'r');
-		ImGui::Text("RubbishValue: ");
-		ImGui::SameLine();
-		if (ImGui::DragFloat(" ", &m_RubbishValue, 0.001f))
-			m_pRubbishEffectVariable->SetFloat(m_RubbishValue);
-	ImGui::PopID();
 
 	if (ImGui::Button("GenerateMesh"))
 		StartMarchingCubes();
@@ -84,15 +83,38 @@ void PointCloud::RenderUI()
 
 HRESULT PointCloud::Initialize()
 {
+	HRESULT result = S_OK;
 	// set the variables
 	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
 	m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
-	m_pRubbishEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gRubbishValue")->AsScalar();
-	m_pRubbishEffectVariable->SetFloat(m_RubbishValue);	
+
+	// create lookup table texture
+	D3D11_TEXTURE2D_DESC lutTriangulationDesc;
+		lutTriangulationDesc.Width = 256;
+		lutTriangulationDesc.Height = 16;
+		lutTriangulationDesc.Format = DXGI_FORMAT_R32_SINT;
+		lutTriangulationDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		lutTriangulationDesc.SampleDesc.Count = 1;
+		lutTriangulationDesc.SampleDesc.Quality = 0;
+		lutTriangulationDesc.Usage = D3D11_USAGE_DEFAULT;
+		lutTriangulationDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		lutTriangulationDesc.ArraySize = 1;
+		lutTriangulationDesc.MipLevels = 1;
+		lutTriangulationDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA lutTriangulationData;
+		lutTriangulationData.pSysMem = &Table::Triangulation[0][0];
+		lutTriangulationData.SysMemPitch = 16 * sizeof(Table::Triangulation[0][0]);
+		lutTriangulationData.SysMemSlicePitch = 16 * 256 * sizeof(Table::Triangulation[0][0]);
+	
+	m_pTriangulationLUT = new Texture(Renderer::GetDevice(), lutTriangulationDesc, lutTriangulationData);
+
+	m_pEffect->GetEffect()->GetVariableByName("gTriangulationLUT")->AsShaderResource()->SetResource(m_pTriangulationLUT->GetSRV());
+
+
 
 	// Create Vertex Layout
-	HRESULT result = S_OK;
-	static const uint32_t numElements{ 3 };
+	static const uint32_t numElements{ 2 };
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[numElements]{};
 
 	vertexDesc[0].SemanticName = "POSITION";
@@ -100,15 +122,10 @@ HRESULT PointCloud::Initialize()
 	vertexDesc[0].AlignedByteOffset = 0;
 	vertexDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
-	vertexDesc[1].SemanticName = "VALUE";
-	vertexDesc[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	vertexDesc[1].SemanticName = "CUBEID";
+	vertexDesc[1].Format = DXGI_FORMAT_R32_UINT;
 	vertexDesc[1].AlignedByteOffset = 12;
 	vertexDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-
-	vertexDesc[2].SemanticName = "VALUESECOND";
-	vertexDesc[2].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	vertexDesc[2].AlignedByteOffset = 12;
-	vertexDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
@@ -144,25 +161,29 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 
 	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
 	{
-		// we add just this little bit to the m_RubbishValue, to prevent any rendering problems
-		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]] + 0.001f;
-		for (uint32_t z = 0; z < shape[1]; ++z)
+		m_RubbishValue = pointCloud[t * shape[1] * shape[2] * shape[3]];
+		for (uint32_t z = 0; z < shape[1] - 1; ++z)
 		{
-			for (uint32_t y = 0; y < shape[2]; ++y)
+			for (uint32_t y = 0; y < shape[2] - 1; ++y)
 			{
-				for (uint32_t x = 0; x < shape[3]; ++x)
+				for (uint32_t x = 0; x < shape[3] - 1; ++x)
 				{
+					std::bitset<8> corners;
+						corners[0] = GetValue(t, z    , y    , x    ) > m_RubbishValue;
+						corners[1] = GetValue(t, z    , y    , x + 1) > m_RubbishValue;
+						corners[2] = GetValue(t, z    , y + 1, x + 1) > m_RubbishValue;
+						corners[3] = GetValue(t, z    , y + 1, x    ) > m_RubbishValue;
+						corners[4] = GetValue(t, z + 1, y    , x    ) > m_RubbishValue; 
+						corners[5] = GetValue(t, z + 1, y    , x + 1) > m_RubbishValue;
+						corners[6] = GetValue(t, z + 1, y + 1, x + 1) > m_RubbishValue; 
+						corners[7] = GetValue(t, z + 1, y + 1, x    ) > m_RubbishValue;
 
 					CubeInfo ci;
 						ci.pos = FPoint3{ float(x), float(y), float(z) };
-						ci.values[0] = GetValue(t, z    , y    , x	  );
-						ci.values[1] = GetValue(t, z    , y    , x + 1);
-						ci.values[2] = GetValue(t, z    , y + 1, x + 1);
-						ci.values[3] = GetValue(t, z    , y + 1, x    );
-						ci.values[4] = GetValue(t, z + 1, y    , x    ); 
-						ci.values[5] = GetValue(t, z + 1, y    , x + 1);
-						ci.values[6] = GetValue(t, z + 1, y + 1, x + 1); 
-						ci.values[7] = GetValue(t, z + 1, y + 1, x    );
+						ci.cubeID = UINT(corners.to_ulong());
+
+					if (!ci.ContainsActiveCorner())
+						continue;
 
 					m_RenderPoints.push_back(ci);
 				}

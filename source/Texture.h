@@ -9,6 +9,7 @@ class Texture final
 {
 public:
 	Texture(ID3D11Device* pDevice, const std::string& filename);
+	Texture(ID3D11Device* pDevice, const D3D11_TEXTURE2D_DESC& texDesc, const D3D11_SUBRESOURCE_DATA& dataDesc);
 	~Texture();
 
 	ID3D11ShaderResourceView* GetSRV() const;

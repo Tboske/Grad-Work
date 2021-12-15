@@ -2,6 +2,7 @@
 #include "BaseObject.h"
 #include "Texture.h"
 #include "Effect.h"
+#include <bitset>
 
 using namespace Elite;
 
@@ -36,15 +37,21 @@ private:
 	struct CubeInfo 
 	{
 		FPoint3 pos = {0,0,0};
-		float values[8] = {};
+		UINT cubeID = 0;
+
+		// if all corners are filled or empty, this cube doesnt matter, and doesnt need any computation
+		bool ContainsActiveCorner() const
+		{
+			return cubeID != 0 && cubeID != 255;
+		}
 	};
 
 	ID3D11InputLayout* m_pVertexLayout = nullptr;
 	ID3D11Buffer* m_pVertexBuffer = nullptr; 
 	ID3DX11EffectVectorVariable* m_pColorEffectVariable = nullptr;
 	RGBColor m_PointColor = { 0.f, 1.f, 1.f };
-	ID3DX11EffectScalarVariable* m_pRubbishEffectVariable = nullptr;
 	float m_RubbishValue = 0.f;
+	Texture* m_pTriangulationLUT;
 
 	std::vector<CubeInfo> m_RenderPoints;
 	std::vector<float> m_PointCloud;

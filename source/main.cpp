@@ -25,7 +25,8 @@ void ShutDown(SDL_Window* pWindow)
 	SDL_Quit();
 }
 
-int main(int argc, char* args[])
+
+int SDL_main(int argc, char* args[])
 {
 	//Unreferenced parameters
 	(void)argc;

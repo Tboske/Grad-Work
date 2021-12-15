@@ -34,12 +34,23 @@ Texture::Texture(ID3D11Device* pDevice, const std::string& filename)
 	sRVDesc.Texture2D.MipLevels = 1;
 
 	if (SUCCEEDED(hr))
-	{
 		hr = pDevice->CreateShaderResourceView(m_pTexture, &sRVDesc, &m_pShaderResourceView);
-	}
 
 	// release textrue info 
 	SDL_FreeSurface(pSurface);
+}
+
+Texture::Texture(ID3D11Device* pDevice, const D3D11_TEXTURE2D_DESC& texDesc, const D3D11_SUBRESOURCE_DATA& dataDesc)
+{
+	HRESULT hr = pDevice->CreateTexture2D(&texDesc, &dataDesc, &m_pTexture);
+	
+	D3D11_SHADER_RESOURCE_VIEW_DESC sRVDesc{};
+		sRVDesc.Format = texDesc.Format;
+		sRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		sRVDesc.Texture2D.MipLevels = texDesc.MipLevels;
+
+	if (SUCCEEDED(hr))
+		hr = pDevice->CreateShaderResourceView(m_pTexture, &sRVDesc, &m_pShaderResourceView);
 }
 
 Texture::~Texture()

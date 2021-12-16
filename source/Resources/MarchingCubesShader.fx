@@ -13,7 +13,7 @@ float4x4    gWorldMatrix   : worldMatrix;
 float4x4    gViewInverse   : viewInverseMatrix;
 
 float3      gLightDirection = float3(0.577f, -0.577f, 0.577f);
-float       gPi = 3.1415927f;
+const float       gPi = 3.1415927f;
 float       gLightIntensity = 7.f;
 
 float3      gColor;     
@@ -105,7 +105,7 @@ void MCGS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 
 
 // ==================================================================================
-//	        Pixel Shader output structure
+//	        Pixel Shader 
 // ----------------------------------------------------------------------------------
 
 float4 GetObservedArea(float3 normal)

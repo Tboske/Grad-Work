@@ -13,22 +13,8 @@ float4x4	gViewInverse	: viewInverseMatrix;
 
 float3		gColor;
 float3		gLightDirection = float3(0.577f, -0.577f, 0.577f);
-float		gPi = 3.1415927f;
+const float		gPi = 3.1415927f;
 float		gLightIntensity = 7.f;
-
-
-
-// ==================================================================================
-//	        Texture samplers
-// ----------------------------------------------------------------------------------
-
-SamplerState samAnisotropic
-{
-	Filter = ANISOTROPIC;
-	AddressU = Border;
-	AddressV = Clamp;
-	BorderColor = float4(0.f, 0.f, 1.f, 1.f);
-};
 
 
 // ==================================================================================
@@ -81,7 +67,7 @@ float4 Lambert(float3 color, float reflectance)
 }
 
 // ==================================================================================
-//	        Pixel Shader output structure
+//	        Pixel Shader 
 // ----------------------------------------------------------------------------------
 
 float4 PS(VS_OUTPUT input) : SV_TARGET

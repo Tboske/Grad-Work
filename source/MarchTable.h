@@ -8,7 +8,7 @@ namespace Table
 {
     // this is a lookup table for all the possible cases of a cube
     // this contains the edgeIndex
-    const short Triangulation[256][16] = {
+    const int Triangulation[256][16] = {
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
         { 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
         { 0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },

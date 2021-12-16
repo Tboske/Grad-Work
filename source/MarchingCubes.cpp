@@ -30,7 +30,7 @@ void MarchingCubes::GenerateMesh()
 			{
 				pos.x = (float)x;
 				const unsigned short trIdx = GetCubeFillID(z, y, x);
-				const short (&vertexIndices)[16] = Table::Triangulation[trIdx];
+				const int (&vertexIndices)[16] = Table::Triangulation[trIdx];
 
 				for (int vertIdx = 0; vertexIndices[vertIdx] != -1; vertIdx += 3)
 				{

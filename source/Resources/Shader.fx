@@ -86,16 +86,10 @@ float4 Lambert(float3 color, float reflectance)
 
 float4 PS(VS_OUTPUT input) : SV_TARGET
 {
-	// move to [-1,1] range
-	input.Normal *= 2;
-	input.Normal.x -= 1;
-	input.Normal.y -= 1;
-	input.Normal.z -= 1;
-
 	const float4 observedArea = GetObservedArea(input.Normal);
 
 
-    return float4(gColor, 1.0f);// * observedArea;
+    return float4(gColor, 1.0f) * observedArea;
 }
 
 

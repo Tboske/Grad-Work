@@ -72,23 +72,20 @@ VS_INPUT MCVS(VS_INPUT input)
 void MCGS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 {
     // we increment by 3 because we want to always add 3 vertices (or 1 triangle) at a time
-    for (int i = 0; i < 15; i += 3)
+    for (int i = 0; gTriangulationLUT.Load(int3(i, input[0].CubeID, 0)) != -1; i += 3)
     {
-        // -1 is an escape value in the lookup table
-        if (gTriangulationLUT.Load(input[0].CubeID + i) == -1)   
-            break;
-
         GS_OUTPUT vert1;
         GS_OUTPUT vert2;
         GS_OUTPUT vert3;
 
         // we just add the vertexOffset to the current position, we do the same on the cpu side
-        vert1.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(input[0].CubeID, i    , 0))], 1.f), gWorldViewProj);
-        vert2.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(input[0].CubeID, i + 1, 0))], 1.f), gWorldViewProj);
-        vert3.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(input[0].CubeID, i + 2, 0))], 1.f), gWorldViewProj);
+        vert1.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i    , input[0].CubeID, 0))], 1.f), gWorldViewProj);
+        vert2.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i + 1, input[0].CubeID, 0))], 1.f), gWorldViewProj);
+        vert3.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i + 2, input[0].CubeID, 0))], 1.f), gWorldViewProj);
 
         // calculate the normal of this triangle, and apply it to all 3 vertices (or this triangle)
         vert1.Normal = cross(vert2.Position.xyz - vert1.Position.xyz, vert3.Position.xyz - vert1.Position.xyz);
+        vert1.Normal = mul(vert1.Normal, (float3x3)gWorldMatrix);
         normalize(vert1.Normal);
         vert2.Normal = vert1.Normal;
         vert3.Normal = vert1.Normal;
@@ -123,16 +120,10 @@ float4 Lambert(float3 color, float reflectance)
 
 float4 MCPS(GS_OUTPUT input) : SV_TARGET
 {
-	//// move to [-1,1] range
- //   input.Normal *= 2;
- //   input.Normal.x -= 1;
- //   input.Normal.y -= 1;
- //   input.Normal.z -= 1;
-
- //   const float4 observedArea = GetObservedArea(input.Normal);
+    const float4 observedArea = GetObservedArea(input.Normal);
 
 
-    return float4(gColor, 1.0f);
+    return float4(gColor, 1.0f) * observedArea;
 }
 
 // ==================================================================================
@@ -143,6 +134,7 @@ technique11 Default
 {
     pass P0
     {
+        SetRasterizerState(gRasterizerState);
         SetVertexShader(CompileShader(vs_4_0, MCVS()));
         SetGeometryShader(CompileShader(gs_4_0, MCGS()));
         SetPixelShader(CompileShader(ps_4_0, MCPS()));

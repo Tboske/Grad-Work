@@ -90,8 +90,8 @@ HRESULT PointCloud::Initialize()
 
 	// create lookup table texture
 	D3D11_TEXTURE2D_DESC lutTriangulationDesc;
-		lutTriangulationDesc.Width = 256;
-		lutTriangulationDesc.Height = 16;
+		lutTriangulationDesc.Width = 16;
+		lutTriangulationDesc.Height = 256;
 		lutTriangulationDesc.Format = DXGI_FORMAT_R32_SINT;
 		lutTriangulationDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		lutTriangulationDesc.SampleDesc.Count = 1;

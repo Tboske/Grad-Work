@@ -78,18 +78,22 @@ void MCGS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
         GS_OUTPUT vert2;
         GS_OUTPUT vert3;
 
-        // we just add the vertexOffset to the current position, we do the same on the cpu side
-        vert1.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i    , input[0].CubeID, 0))], 1.f), gWorldViewProj);
-        vert2.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i + 1, input[0].CubeID, 0))], 1.f), gWorldViewProj);
-        vert3.Position = mul(float4(input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i + 2, input[0].CubeID, 0))], 1.f), gWorldViewProj);
+        const float3 pos1 = input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i    , input[0].CubeID, 0))];
+        const float3 pos2 = input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i + 1, input[0].CubeID, 0))];
+        const float3 pos3 = input[0].Position + tVertexOffset[gTriangulationLUT.Load(int3(i + 2, input[0].CubeID, 0))];
 
         // calculate the normal of this triangle, and apply it to all 3 vertices (or this triangle)
-        vert1.Normal = cross(vert2.Position.xyz - vert1.Position.xyz, vert3.Position.xyz - vert1.Position.xyz);
-        vert1.Normal = mul(vert1.Normal, (float3x3)gWorldMatrix);
-        normalize(vert1.Normal);
-        vert2.Normal = vert1.Normal;
-        vert3.Normal = vert1.Normal;
+        float3 norm = cross(pos2 - pos1, pos3 - pos1);
+        norm = mul(norm, (float3x3) gWorldMatrix);
+        normalize(norm);
 
+        vert1.Position = mul(float4(pos1, 1.f), gWorldViewProj);
+        vert2.Position = mul(float4(pos2, 1.f), gWorldViewProj);
+        vert3.Position = mul(float4(pos3, 1.f), gWorldViewProj);
+
+        vert1.Normal = -norm;
+        vert2.Normal = -norm;
+        vert3.Normal = -norm;
         // add triangle vertices to trianglestream
         triStream.Append(vert1);
         triStream.Append(vert2);

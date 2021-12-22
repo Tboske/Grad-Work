@@ -3,6 +3,7 @@
 #include "IOFiles.h"
 #include "SceneGraph.h"
 #include "Renderer.h"
+#include <thread>
 
 Mesh::Mesh(const std::string& meshName, const std::vector<Vertex_Input>& vertices, const FPoint3& pos, const RGBColor color)
 	: BaseObject(meshName, pos, L"Resources/Shader.fx")
@@ -59,10 +60,19 @@ void Mesh::RenderUI()
 	BaseObject::RenderUI();
 
 	ImGui::PushID((char*)this + 'c');
-	ImGui::Text("Color: ");
-	ImGui::SameLine();
-	if (ImGui::ColorEdit3(" ", &m_Color.r))
-		m_pColorEffectVariable->SetFloatVector(&m_Color.r);
+		ImGui::Text("Color: ");
+		ImGui::SameLine();
+		if (ImGui::ColorEdit3(" ", &m_Color.r))
+			m_pColorEffectVariable->SetFloatVector(&m_Color.r);
+	ImGui::PopID();
+
+	ImGui::PushID((char*)this + 'e');
+		ImGui::InputTextWithHint("Location", "Enter location to export to", m_ExportLocation, IM_ARRAYSIZE(m_ExportLocation));
+		if (ImGui::Button("Export as .obj!", { -1, 25 }))
+		{
+			std::thread thr(IOFiles::ExportMesh, this, m_ExportLocation);
+			thr.detach();
+		}
 	ImGui::PopID();
 }
 

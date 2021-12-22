@@ -6,14 +6,12 @@
 #include "MarchTable.h"
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
-	: BaseObject(meshName, pos, L"Resources/MarchingCubesShader.fx")	// if you change this to the marching cubes shader, dont forget to change topology in the render function
+	: BaseObject(meshName, pos, L"Resources/MarchingCubesShader.fx")
 	, m_PointCloud{ pointCloud }		// MarchingCubesShader
 	, m_Shape{ shape }
 {
 	InitPointCloud(pointCloud, shape);
 	Initialize();
-
-	//StartMarchingCubes();
 }
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FMatrix4& transform)
@@ -54,7 +52,6 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 
 	// Set the primitive topology
 	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	//pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Render a triangle
 	D3DX11_TECHNIQUE_DESC techDesc;

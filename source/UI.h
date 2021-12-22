@@ -26,15 +26,8 @@ private:
 	int m_SelectedAlgorithm = 0;
 	const char* m_pAlgorithms[2]{ "Marching Cubes", "Dual Contouring" };
 
-
-	char m_ExportLocation[128]{};
-
-
-	int m_SelectedMesh = 0;
-
 // Functions
 	void ImportTab();
-	void ExportTab();
 	void MeshTab() const;
 };
 

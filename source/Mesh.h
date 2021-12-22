@@ -37,6 +37,8 @@ private:
 	ID3DX11EffectVectorVariable* m_pColorEffectVariable = nullptr;
 	RGBColor m_Color;
 
+	char m_ExportLocation[128]{};
+
 	HRESULT Initialize();
 };
 

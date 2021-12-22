@@ -51,7 +51,6 @@ void UI::RenderUI(float height)
 		if (ImGui::BeginTabBar("Tab"))
 		{
 			ImportTab();
-			ExportTab();
 			MeshTab();
 
 			ImGui::EndTabBar();
@@ -82,19 +81,6 @@ void UI::ImportTab()
 			std::thread thr(IOFiles::ImportFile, file, m_MeshName, FPoint3{ m_Pos[0], m_Pos[1], m_Pos[2] });
 			thr.detach();
 		}
-
-		ImGui::EndTabItem();
-	}
-}
-
-void UI::ExportTab()
-{
-	if (ImGui::BeginTabItem("Export"))
-	{
-		ImGui::InputTextWithHint("Location", "Enter location to export to", m_ExportLocation, IM_ARRAYSIZE(m_ExportLocation));
-		ImGui::TextColored({ 1,0,0,1 }, "Include the extension!");
-		if (ImGui::Button("Export!", { -1, 25 }))
-			IOFiles::ExportMesh((Mesh*)SceneGraph::GetInstance()->GetObjects()[0], m_ExportLocation);
 
 		ImGui::EndTabItem();
 	}

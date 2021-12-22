@@ -12,8 +12,9 @@ IOFiles::~IOFiles()
 {
 }
 
-bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::string& location)
+bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName)
 {
+
 	// check if filename is valid
 	static const std::regex fileCheck{ "^([[:alpha:]].*?)(?:\\.[[:alpha:]]*)?$" };
 	std::smatch m{};
@@ -29,6 +30,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 	//std::unordered_set<FPoint3, FPoint3> verts;
 	int indexAmt{ 0 };
 	const std::vector<Mesh::Vertex_Input>& vertexData = mesh->GetVertexData();
+	Progress::Start("Constructing vertices", vertexData.size());
 	for (size_t v = 0; v < vertexData.size(); v += 3)
 	{
 		IPoint3 index{};
@@ -45,20 +47,23 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 			<< index.z << '\n';
 
 		++indexAmt;
+		Progress::SetValue(v);
 	}
-	for (const auto& v : verts)
+	Progress::ResetProgress(verts.size(), "Constructing indices");
+	for (size_t v = 0; v < verts.size(); ++v)
 	{
 		// line example - "v -1.06 2.56 5.1"
 		vStream << 'v' << ' ' 
-			<< v.x	<< ' ' 
-			<< v.y	<< ' '
-			<< v.z	<< '\n';
+			<< verts[v].x	<< ' ' 
+			<< verts[v].y	<< ' '
+			<< verts[v].z	<< '\n';
+		Progress::SetValue(v);
 	}
 
 
 	// write data to obj file
 	std::ofstream out;
-	out.open(location + fileName + ".obj");
+	out.open("Resources/Export/" + fileName + ".obj");
 	if (out.is_open())
 	{
 		out << "# " << verts.size() << " Vertices\n";
@@ -68,7 +73,8 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName, const std::str
 
 		out.close();
 	}
-	std::cout << "Export Successful!\n";
+	
+	Progress::SetInactive();
 	return true;
 }
 

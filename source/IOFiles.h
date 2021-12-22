@@ -11,7 +11,7 @@ public:
 	~IOFiles();
 	static void Initialize() { GetInstance(); }
 
-	static bool ExportMesh(Mesh* mesh, const std::string& fileName = "ExportedMesh", const std::string& location = "Resources/Export/");
+	static bool ExportMesh(Mesh* mesh, const std::string& fileName = "ExportedMesh");
 	static void ImportFile(const std::string& file, std::string name = "", const FPoint3& pos = {0,0,0});
 
 

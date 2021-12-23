@@ -11,7 +11,8 @@ public:
 	~IOFiles();
 	static void Initialize() { GetInstance(); }
 
-	static bool ExportMesh(Mesh* mesh, const std::string& fileName = "ExportedMesh");
+	// intentional copy
+	static bool ExportMesh(Mesh* mesh, std::string fileName = "");
 	static void ImportFile(const std::string& file, std::string name = "", const FPoint3& pos = {0,0,0});
 
 
@@ -23,7 +24,7 @@ private:
 		return pInstance;
 	}
 
-	void AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index);
+	static void AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index);
 
 	void ImportOBJData(const std::string& file, const std::string& fileName, const FPoint3& pos);
 	void ImportVTKData(const std::string& file, const std::string& fileName, const FPoint3& pos);

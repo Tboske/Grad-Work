@@ -1,4 +1,4 @@
-#include "pch.h"
+ #include "pch.h"
 #include "IOFiles.h"
 #include <fstream>
 #include <regex>
@@ -7,21 +7,29 @@
 #include "SceneGraph.h"
 #include "Progress.h"
 #include <ios>
+#include <thread>
 
 IOFiles::~IOFiles()
 {
 }
 
-bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName)
+bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 {
 
 	// check if filename is valid
-	static const std::regex fileCheck{ "^([[:alpha:]].*?)(?:\\.[[:alpha:]]*)?$" };
+	static const std::regex fileCheck{ "^[\\w\\-. ]+$" };
 	std::smatch m{};
 	if (!std::regex_match(fileName, m, fileCheck))
 	{
-		std::cout << "Invalid export filename!\n";
-		return false;
+		if (fileName.empty())
+		{
+			fileName = mesh->GetMeshName();
+		}
+		else
+		{
+			std::cout << "Invalid export filename!\n";
+			return false;
+		}
 	}
 
 	// convert data from buffer to stringstream
@@ -30,15 +38,13 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName)
 	//std::unordered_set<FPoint3, FPoint3> verts;
 	int indexAmt{ 0 };
 	const std::vector<Mesh::Vertex_Input>& vertexData = mesh->GetVertexData();
-	Progress::Start("Constructing vertices", vertexData.size());
-	for (size_t v = 0; v < vertexData.size(); v += 3)
+	Progress::Start("Constructing vertices", float(vertexData.size()));
+	for (size_t f = 0; f < vertexData.size(); f += 3)
 	{
 		IPoint3 index{};
-		GetInstance()->AddVertexAndAssignIndex(verts, vertexData[v    ].Position, index.x);
-		GetInstance()->AddVertexAndAssignIndex(verts, vertexData[v + 1].Position, index.y);
-		GetInstance()->AddVertexAndAssignIndex(verts, vertexData[v + 2].Position, index.z);
-
-		//auto x = verts.insert(vertexData[v].Position);
+		AddVertexAndAssignIndex(verts, vertexData[f    ].Position, index.x);
+		AddVertexAndAssignIndex(verts, vertexData[f + 1].Position, index.y);
+		AddVertexAndAssignIndex(verts, vertexData[f + 2].Position, index.z);
 
 		// line example - "f 1 5 2"
 		fStream << 'f' << ' '
@@ -47,9 +53,9 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName)
 			<< index.z << '\n';
 
 		++indexAmt;
-		Progress::SetValue(v);
+		Progress::SetValue(float(f));
 	}
-	Progress::ResetProgress(verts.size(), "Constructing indices");
+	Progress::ResetProgress(float(verts.size()), "Constructing indices");
 	for (size_t v = 0; v < verts.size(); ++v)
 	{
 		// line example - "v -1.06 2.56 5.1"
@@ -57,7 +63,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, const std::string& fileName)
 			<< verts[v].x	<< ' ' 
 			<< verts[v].y	<< ' '
 			<< verts[v].z	<< '\n';
-		Progress::SetValue(v);
+		Progress::SetValue(float(v));
 	}
 
 
@@ -122,7 +128,6 @@ void IOFiles::AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint
 	}
 	// increase index by 1, obj files start counting from 1 and not from 0
 	++index;
-
 }
 
 void IOFiles::ImportOBJData(const std::string& file, const std::string& fileName, const FPoint3& pos)

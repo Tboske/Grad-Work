@@ -18,7 +18,7 @@ void MarchingCubes::GenerateMesh()
 
 	const std::vector<uint32_t>& m_Shape = m_pPointCloud->GetShape();
 	
-	Progress::Start("Running Marching Cubes", float(m_Shape[1] * m_Shape[2] * m_Shape[3]));
+	Progress::Start("Marching Cubes", "Running Algorithm", float(m_Shape[1] * m_Shape[2] * m_Shape[3]));
 	FPoint3 pos;
 	for (uint32_t z = 0; z < m_Shape[1] - 1; ++z)			// using the size of points -1 because we want 
 	{														// to march through this with cubes and not points
@@ -51,7 +51,7 @@ void MarchingCubes::GenerateMesh()
 			}
 		}
 	}
-	Progress::SetInactive();
+	Progress::End();
 	
 	SceneGraph::GetInstance()->AddObject(new Mesh(
 		m_pPointCloud->GetMeshName() + "_Isosurface"

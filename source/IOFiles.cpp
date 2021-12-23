@@ -15,7 +15,6 @@ IOFiles::~IOFiles()
 
 bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 {
-
 	// check if filename is valid
 	static const std::regex fileCheck{ "^[\\w\\-. ]+$" };
 	std::smatch m{};
@@ -38,7 +37,8 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 	//std::unordered_set<FPoint3, FPoint3> verts;
 	int indexAmt{ 0 };
 	const std::vector<Mesh::Vertex_Input>& vertexData = mesh->GetVertexData();
-	Progress::Start("Constructing vertices", float(vertexData.size()));
+
+	Progress::Start("Exporting Mesh", "Constructing vertices", vertexData.size());
 	for (size_t f = 0; f < vertexData.size(); f += 3)
 	{
 		IPoint3 index{};
@@ -55,7 +55,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 		++indexAmt;
 		Progress::SetValue(float(f));
 	}
-	Progress::ResetProgress(float(verts.size()), "Constructing indices");
+	Progress::Reset("Constructing indices", float(verts.size()));
 	for (size_t v = 0; v < verts.size(); ++v)
 	{
 		// line example - "v -1.06 2.56 5.1"
@@ -80,7 +80,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 		out.close();
 	}
 	
-	Progress::SetInactive();
+	Progress::End();
 	return true;
 }
 
@@ -88,7 +88,6 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 {
 	auto inst = GetInstance();
 	Progress::Start("Start loading in Mesh");
-	
 
 	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
 	std::smatch sm{};
@@ -111,7 +110,7 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 		else
 			std::cout << "Unsupported file extension\n";
 	}
-	Progress::SetInactive();
+	Progress::End();
 }
 
 void IOFiles::AddVertexAndAssignIndex(std::vector<FPoint3>& vector, const FPoint3& vertex, int& index)
@@ -211,7 +210,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 		size_t vertCount = std::stoi(line);
 		tempVerts.resize(vertCount);
 
-		Progress::ResetProgress(float(tempVerts.size()), "Importing Vertices");
+		Progress::Reset("Importing Vertices", float(tempVerts.size()));
 		for (size_t i = 0; i < tempVerts.size(); ++i)
 		{
 			FPoint3& vert = tempVerts[i];
@@ -242,7 +241,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 			tempIndices.reserve(tempIndices.size() + indCount);
 
 			std::string c;
-			Progress::ResetProgress(float(tempIndices.size()), "Importing Indices");
+			Progress::Reset("Importing Indices", float(tempIndices.size()));
 
 			for (size_t i = 0; i < indCount; ++i)
 			{
@@ -257,7 +256,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 	}
 
 
-	Progress::ResetProgress(float(tempIndices.size()), "Constructing Mesh");
+	Progress::Reset("Constructing Mesh", float(tempIndices.size()));
 	for (uint32_t i = 0; i < tempIndices.size(); ++i)
 	{
 		constexpr int vertsPerLoop = 3;
@@ -315,7 +314,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 		size_t vertCount = std::stoi(line);
 		tempVerts.resize(vertCount);
 
-		Progress::ResetProgress(float(tempVerts.size()), "Importing Vertices");
+		Progress::Reset("Importing Vertices", float(tempVerts.size()));
 		for (size_t i = 0; i < tempVerts.size(); ++i)
 		{
 			FPoint3& vert = tempVerts[i];
@@ -339,7 +338,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 			tempIndices.resize(indCount);
 
 			std::string c;
-			Progress::ResetProgress(float(tempIndices.size()), "Importing Indices");
+			Progress::Reset("Importing Indices", float(tempIndices.size()));
 
 			for (size_t i = 0; i < tempIndices.size(); ++i)
 			{
@@ -352,7 +351,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 		myFile.close();
 	}
 
-	Progress::ResetProgress(float(tempIndices.size()), "Constructing Mesh");
+	Progress::Reset("Constructing Mesh", float(tempIndices.size()));
 	for (uint32_t i = 0; i < tempIndices.size(); ++i)
 	{
 		constexpr int vertsPerLoop = 6;

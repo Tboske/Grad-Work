@@ -26,18 +26,17 @@ void Progress::LoadingPopUpImpl() const
 	}
 }
 
-void Progress::StartImpl(const std::string& s, float maxVal) {
+void Progress::StartImpl(const std::string& title, const std::string& desc, float maxVal) {
+	m_Title = title;
 	m_Active = true;
 	m_StartTime = high_resolution_clock::now();
-	m_Value = 0.f;
-	m_MaxValue = maxVal;
-	m_Description = s;
+	ResetImpl(desc, maxVal);
 }
 
-void Progress::ResetProgressImpl(float maxVal, const std::string& s)
+void Progress::ResetImpl(const std::string& desc, float maxVal)
 {
 	m_Value = 0.f;
-	m_Description = s;
+	m_Description = desc;
 	m_MaxValue = maxVal;
 }
 

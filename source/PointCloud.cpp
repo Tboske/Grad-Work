@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "PointCloud.h"
-#include "MarchingCubes.h"
 #include "Renderer.h"
 #include <thread>
 #include "MarchTable.h"
+#include "Progress.h"
+#include "IOFiles.h"
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
 	: BaseObject(meshName, pos, L"Resources/MarchingCubesShader.fx")
@@ -74,8 +75,14 @@ void PointCloud::RenderUI()
 			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
 	ImGui::PopID();
 
-	if (ImGui::Button("GenerateMesh"))
-		StartMarchingCubes();
+	ImGui::Spacing();
+
+	ImGui::InputTextWithHint("FileName", "DefaultExport", m_Filename, IM_ARRAYSIZE(m_Filename));
+	if (ImGui::Button("Export", { -1, 25 }))
+	{
+		std::thread thr(&PointCloud::StartExport, this);
+		thr.detach();
+	}
 }
 
 HRESULT PointCloud::Initialize()
@@ -165,19 +172,9 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 			{
 				for (uint32_t x = 0; x < shape[3] - 1; ++x)
 				{
-					std::bitset<8> corners;
-						corners[0] = GetValue(t, z    , y    , x    ) > m_RubbishValue;
-						corners[1] = GetValue(t, z    , y    , x + 1) > m_RubbishValue;
-						corners[2] = GetValue(t, z    , y + 1, x + 1) > m_RubbishValue;
-						corners[3] = GetValue(t, z    , y + 1, x    ) > m_RubbishValue;
-						corners[4] = GetValue(t, z + 1, y    , x    ) > m_RubbishValue; 
-						corners[5] = GetValue(t, z + 1, y    , x + 1) > m_RubbishValue;
-						corners[6] = GetValue(t, z + 1, y + 1, x + 1) > m_RubbishValue; 
-						corners[7] = GetValue(t, z + 1, y + 1, x    ) > m_RubbishValue;
-
 					CubeInfo ci;
 						ci.pos = FPoint3{ float(x), float(y), float(z) };
-						ci.cubeID = UINT(corners.to_ulong());
+						ci.cubeID = UINT(GetCubeFillID(z,y,x));
 
 					if (!ci.ContainsActiveCorner())
 						continue;
@@ -189,9 +186,77 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 	}
 }
 
-void PointCloud::StartMarchingCubes() const
+void PointCloud::StartExport()
 {
-	MarchingCubes* pMarchingCubes = new MarchingCubes(this);
-	std::thread thr(&MarchingCubes::GenerateMesh, pMarchingCubes);
-	thr.detach();
+	std::vector<Mesh::Vertex_Input> vertices;
+
+	Progress::Start("Marching Cubes", "Running Algorithm", float(m_Shape[1] * m_Shape[2] * m_Shape[3]));
+	FPoint3 pos;
+	for (uint32_t z = 0; z < m_Shape[1] - 1; ++z)			// using the size of points -1 because we want 
+	{														// to march through this with cubes and not points
+		pos.z = (float)z;
+		for (uint32_t y = 0; y < m_Shape[2] - 1; ++y)
+		{
+			pos.y = (float)y;
+			for (uint32_t x = 0; x < m_Shape[3] - 1; ++x)
+			{
+				pos.x = (float)x;
+				const unsigned short trIdx = GetCubeFillID(z, y, x);
+				const int(&vertexIndices)[16] = Table::Triangulation[trIdx];
+
+				for (int vertIdx = 0; vertexIndices[vertIdx] != -1; vertIdx += 3)
+				{
+					const FPoint3 p0 = pos + Table::VertexOffsets[vertexIndices[vertIdx]];
+					const FPoint3 p1 = pos + Table::VertexOffsets[vertexIndices[vertIdx + 1]];
+					const FPoint3 p2 = pos + Table::VertexOffsets[vertexIndices[vertIdx + 2]];
+
+					// normal Calculation
+					FVector3 normal{ Cross(p1 - p0, p2 - p0) };
+					Normalize(normal);
+
+					vertices.emplace_back(p0, -normal);
+					vertices.emplace_back(p1, -normal);
+					vertices.emplace_back(p2, -normal);
+
+					Progress::SetValue(float((z * m_Shape[2] * m_Shape[3]) + (y * m_Shape[3]) + x));
+				}
+			}
+		}
+	}
+	Progress::End();
+
+	IOFiles::ExportMesh(new Mesh(
+		GetMeshName() + "_Isosurface"
+		, vertices
+		, GetTransform()
+	), m_Filename);
+}
+
+float PointCloud::GetValue(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const
+{
+	// return rubbish value in case one of the indices are out of bounds
+	if (z >= m_Shape[1] || y >= m_Shape[2] || x >= m_Shape[3])
+		return m_RubbishValue;
+
+	uint32_t c = (t * m_Shape[1] * m_Shape[2] * m_Shape[3])
+		+ (z * m_Shape[2] * m_Shape[3])
+		+ (y * m_Shape[3])
+		+ x;
+
+	return m_PointCloud[c];
+}
+
+unsigned char PointCloud::GetCubeFillID(uint32_t z, uint32_t y, uint32_t x) const
+{
+	std::bitset<8> c;												/*			 6 +----------+	7																	*/                                    
+		c[0] = GetValue( 0, z    , y    , x    ) > m_RubbishValue;	/*			   |\         |\																	*/
+		c[1] = GetValue( 0, z    , y    , x + 1) > m_RubbishValue;	/*			   | \        | \																	*/
+		c[2] = GetValue( 0, z    , y + 1, x + 1) > m_RubbishValue;	/*			   |2 +----------+ 3																*/
+		c[3] = GetValue( 0, z    , y + 1, x    ) > m_RubbishValue;	/*			   |  |       |  |																	*/
+		c[4] = GetValue( 0, z + 1, y    , x    ) > m_RubbishValue;	/*			 4 +--|-------+ 5|																	*/
+		c[5] = GetValue( 0, z + 1, y    , x + 1) > m_RubbishValue;	/*			    \ |        \ |																	*/
+		c[6] = GetValue( 0, z + 1, y + 1, x + 1) > m_RubbishValue;	/*			     \|         \|																	*/
+		c[7] = GetValue( 0, z + 1, y + 1, x    ) > m_RubbishValue;	/*			    0 +----------+ 1																*/
+																		
+	return static_cast<unsigned char>(c.to_ulong());
 }

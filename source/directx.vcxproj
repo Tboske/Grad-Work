@@ -107,7 +107,6 @@
     <ClInclude Include="EVector2.h" />
     <ClInclude Include="EVector3.h" />
     <ClInclude Include="EVector4.h" />
-    <ClInclude Include="MarchingCubes.h" />
     <ClInclude Include="MarchTable.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="IOFiles.h" />
@@ -117,6 +116,7 @@
     <ClInclude Include="Progress.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SceneGraph.h" />
+    <ClInclude Include="SlicePlane.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
@@ -154,7 +154,6 @@
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="ETimer.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MarchingCubes.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="IOFiles.cpp" />
     <ClCompile Include="pch.cpp">
@@ -165,6 +164,7 @@
     <ClCompile Include="Progress.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
+    <ClCompile Include="SlicePlane.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>

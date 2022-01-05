@@ -20,8 +20,11 @@ public:
 	const FPoint3& GetPosition() const { return FPoint3(m_Transform[3].xyz); }
 	const FMatrix4& GetTransform() const { return m_Transform; }
 
+	void AddChild(BaseObject* pObject) { m_pChildObjects.push_back(pObject); }
+
 protected:
 	Effect* m_pEffect = nullptr;
+	std::vector<BaseObject*> m_pChildObjects;
 private:
 	FMatrix4 m_Transform;
 	std::string m_MeshName;

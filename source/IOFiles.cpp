@@ -404,7 +404,6 @@ void IOFiles::ImportIthildinFile(const std::string& file, const std::string& fil
 		// read all information in data
 		const int product = std::accumulate(shape.cbegin(), shape.cend(), 1, std::multiplies<int>());
 
-		// resize the data vector
 		data.resize(product);
 		// read all the binary data into data
 		f.read((char*)data.data(), product * sizeof(float));

@@ -20,19 +20,7 @@ public:
 	const std::vector<uint32_t>& GetShape() const { return m_Shape; }
 	float GetRubbishValue() const { return m_RubbishValue; }
 
-	float GetValue(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const
-	{
-		// return rubbish value in case one of the indices are out of bounds
-		if (z >= m_Shape[1] || y >= m_Shape[2] || x >= m_Shape[3])
-			return m_RubbishValue;
 
-		uint32_t c = (t * m_Shape[1] * m_Shape[2] * m_Shape[3])
-			+ (z * m_Shape[2] * m_Shape[3])
-			+ (y * m_Shape[3])
-			+ x;
-
-		return m_PointCloud[c];
-	}
 private:
 	struct CubeInfo 
 	{
@@ -57,8 +45,12 @@ private:
 	std::vector<float> m_PointCloud;
 	std::vector<uint32_t> m_Shape;
 
+	char m_Filename[50];
 	HRESULT Initialize();
 	void InitPointCloud(const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape);
-	void StartMarchingCubes() const;
+
+	void StartExport();
+	float GetValue(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const;
+	unsigned char GetCubeFillID(uint32_t z, uint32_t y, uint32_t x) const;
 };
 

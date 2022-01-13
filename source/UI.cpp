@@ -48,24 +48,9 @@ void UI::RenderUI(float height)
 
 		ImGui::SetWindowPos({ 0, 0 });
 		ImGui::SetWindowSize({ 300, height });
-		if (ImGui::BeginTabBar("Tab"))
-		{
-			ImportTab();
-			MeshTab();
 
-			ImGui::EndTabBar();
-		}
-		ImGui::End();
-	}
-
-	ImGui::Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-}
-
-void UI::ImportTab()
-{
-	if (ImGui::BeginTabItem("Import"))
-	{
+		// import related
+		ImGui::Text("Import");
 		ImGui::Text("For now paste the files into Resources/Input");
 		ImGui::TextColored({ 1,0,0,1 }, "Enter the Filename");
 		ImGui::Combo("FileType", &m_SelectedFileType, m_pFileTypes, IM_ARRAYSIZE(m_pFileTypes));
@@ -82,23 +67,23 @@ void UI::ImportTab()
 			thr.detach();
 		}
 
-		ImGui::EndTabItem();
-	}
-}
-
-void UI::MeshTab() const
-{
-	if (ImGui::BeginTabItem("MeshTab"))
-	{
-		for (BaseObject* pMesh : SceneGraph::GetInstance()->GetObjects())
+		// mesh settings
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Text("MeshList");
+		const auto& objects = SceneGraph::GetInstance()->GetObjects();
+		for (size_t i = 0; i < objects.size(); ++i)
 		{
-			if (ImGui::TreeNode(pMesh, pMesh->GetMeshName().c_str()))
+			if (ImGui::TreeNode(objects[i], objects[i]->GetMeshName().c_str()))
 			{
-				pMesh->RenderUI();
+				objects[i]->RenderUI();
 				ImGui::TreePop();
 			}
 		}
 
-		ImGui::EndTabItem();
+		ImGui::End();
 	}
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }

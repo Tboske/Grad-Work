@@ -28,6 +28,5 @@ private:
 
 // Functions
 	void ImportTab();
-	void MeshTab() const;
 };
 

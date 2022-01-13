@@ -5,20 +5,25 @@
 #include "MarchTable.h"
 #include "Progress.h"
 #include "IOFiles.h"
+#include <numeric>
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FPoint3& pos)
 	: BaseObject(meshName, pos, L"Resources/MarchingCubesShader.fx")
 	, m_PointCloud{ pointCloud }		// MarchingCubesShader
 	, m_Shape{ shape }
+	, m_pPointCloudEffect{ new Effect(L"Resources/PointShader.fx") }
+	, m_pSlicePlane{ new SlicePlane("Slicepane") }
 {
 	InitPointCloud(pointCloud, shape);
 	Initialize();
 }
 
 PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape, const FMatrix4& transform)
-	: BaseObject(meshName, transform, L"Resources/PointShader.fx")
+	: BaseObject(meshName, transform, L"Resources/MarchingCubesShader.fx")
 	, m_PointCloud{ pointCloud }
 	, m_Shape{ shape }
+	, m_pPointCloudEffect{ new Effect(L"Resources/PointShader.fx") }
+	, m_pSlicePlane{ new SlicePlane("Slicepane")}
 {
 	InitPointCloud(pointCloud, shape);
 	Initialize();
@@ -26,6 +31,9 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 
 PointCloud::~PointCloud()
 {
+	delete m_pPointCloudEffect;
+	m_pPointCloudEffect = nullptr;
+
 	delete m_pTriangulationLUT;
 	m_pTriangulationLUT = nullptr;
 
@@ -42,6 +50,7 @@ PointCloud::~PointCloud()
 void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 {
 	BaseObject::Render(pDeviceContext);
+	m_pPointCloudEffect->UpdateMatrix(GetTransform());
 
 	// Set vertex buffer
 	const UINT stride = sizeof(CubeInfo);
@@ -54,35 +63,54 @@ void PointCloud::Render(ID3D11DeviceContext* pDeviceContext) const
 	// Set the primitive topology
 	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	// Render a triangle
+	// Render a mesh	
 	D3DX11_TECHNIQUE_DESC techDesc;
-	m_pEffect->GetTechnique()->GetDesc(&techDesc);
+	if (m_IsPreviewVisible)
+		m_pEffect->GetTechnique()->GetDesc(&techDesc);
+	else
+		m_pPointCloudEffect->GetTechnique()->GetDesc(&techDesc);
+
 	for (UINT p = 0; p < techDesc.Passes; ++p)
 	{
-		m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
+		if (m_IsPreviewVisible)
+			m_pEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
+		else 
+			m_pPointCloudEffect->GetTechnique()->GetPassByIndex(p)->Apply(0, pDeviceContext);
+
 		pDeviceContext->Draw(UINT(m_RenderPoints.size()), 0);
 	}
+	m_pSlicePlane->Render(pDeviceContext);
 }
 
 void PointCloud::RenderUI()
 {
 	BaseObject::RenderUI();
 
-	ImGui::PushID((char*)this + 'c');
-		ImGui::Text("Color: ");
-		ImGui::SameLine();
-		if (ImGui::ColorEdit3(" ", &m_PointColor.r))
+	ImGui::PushID(this + 'c');
+		if (ImGui::ColorEdit3("Color", &m_PointColor.r))
+		{
 			m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
+			m_pColorEffectVariable2->SetFloatVector(&m_PointColor.r);
+		}
 	ImGui::PopID();
+	ImGui::Spacing();
+
+		ImGui::Checkbox("Render Preview", &m_IsPreviewVisible);
 
 	ImGui::Spacing();
 
-	ImGui::InputTextWithHint("FileName", "DefaultExport", m_Filename, IM_ARRAYSIZE(m_Filename));
-	if (ImGui::Button("Export", { -1, 25 }))
+	m_pSlicePlane->RenderUI();
+
+	ImGui::Spacing();
+	ImGui::Spacing();
+
+		ImGui::InputTextWithHint("FileName", "DefaultExport", m_Filename, IM_ARRAYSIZE(m_Filename));
+		if (ImGui::Button("Export", { -1, 25 }))
 	{
 		std::thread thr(&PointCloud::StartExport, this);
 		thr.detach();
 	}
+
 }
 
 HRESULT PointCloud::Initialize()
@@ -91,6 +119,8 @@ HRESULT PointCloud::Initialize()
 	// set the variables
 	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
 	m_pColorEffectVariable->SetFloatVector(&m_PointColor.r);
+	m_pColorEffectVariable2 = m_pPointCloudEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
+	m_pColorEffectVariable2->SetFloatVector(&m_PointColor.r);
 
 	// create lookup table texture
 	D3D11_TEXTURE2D_DESC lutTriangulationDesc;
@@ -114,8 +144,6 @@ HRESULT PointCloud::Initialize()
 	m_pTriangulationLUT = new Texture(Renderer::GetDevice(), lutTriangulationDesc, lutTriangulationData);
 
 	m_pEffect->GetEffect()->GetVariableByName("gTriangulationLUT")->AsShaderResource()->SetResource(m_pTriangulationLUT->GetSRV());
-
-
 
 	// Create Vertex Layout
 	static const uint32_t numElements{ 2 };
@@ -152,8 +180,6 @@ HRESULT PointCloud::Initialize()
 	D3D11_SUBRESOURCE_DATA initData = { 0 };
 	initData.pSysMem = m_RenderPoints.data();
 	result = Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
-	if (FAILED(result))
-		return result;
 
 	return result;
 }
@@ -162,6 +188,11 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 {
 	// everything containing the rubbish value is not a piece of the pointcloud
 	m_RenderPoints.reserve(pointCloud.size());
+	
+	Progress::Start("Initializing"
+		, "Generating Cube info"
+		, float(GetPos(shape[0], shape[1], shape[2], shape[3]))
+	);
 
 	for (uint32_t t = 0; t < 1; ++t)	// for now we just use 1 time frame
 	{
@@ -174,19 +205,23 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 				{
 					CubeInfo ci;
 						ci.pos = FPoint3{ float(x), float(y), float(z) };
-						ci.cubeID = UINT(GetCubeFillID(z,y,x));
+						ci.cubeID = UINT(GetCubeFillID(z, y, x));
 
 					if (!ci.ContainsActiveCorner())
 						continue;
 
 					m_RenderPoints.push_back(ci);
+					
+					Progress::SetProgress(float(GetPos(t, z, y, x)));
 				}
 			}
 		}
 	}
+
+	Progress::End();
 }
 
-void PointCloud::StartExport()
+void PointCloud::StartExport() const
 {
 	std::vector<Mesh::Vertex_Input> vertices;
 
@@ -218,7 +253,7 @@ void PointCloud::StartExport()
 					vertices.emplace_back(p1, -normal);
 					vertices.emplace_back(p2, -normal);
 
-					Progress::SetValue(float((z * m_Shape[2] * m_Shape[3]) + (y * m_Shape[3]) + x));
+					Progress::SetProgress(float((z * m_Shape[2] * m_Shape[3]) + (y * m_Shape[3]) + x));
 				}
 			}
 		}
@@ -238,17 +273,12 @@ float PointCloud::GetValue(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const
 	if (z >= m_Shape[1] || y >= m_Shape[2] || x >= m_Shape[3])
 		return m_RubbishValue;
 
-	uint32_t c = (t * m_Shape[1] * m_Shape[2] * m_Shape[3])
-		+ (z * m_Shape[2] * m_Shape[3])
-		+ (y * m_Shape[3])
-		+ x;
-
-	return m_PointCloud[c];
+	return m_PointCloud[GetPos(t,z,y,x)];
 }
 
 unsigned char PointCloud::GetCubeFillID(uint32_t z, uint32_t y, uint32_t x) const
 {
-	std::bitset<8> c;												/*			 6 +----------+	7																	*/                                    
+	std::bitset<8> c;													/*			 6 +----------+	7																	*/                                    
 		c[0] = GetValue( 0, z    , y    , x    ) > m_RubbishValue;	/*			   |\         |\																	*/
 		c[1] = GetValue( 0, z    , y    , x + 1) > m_RubbishValue;	/*			   | \        | \																	*/
 		c[2] = GetValue( 0, z    , y + 1, x + 1) > m_RubbishValue;	/*			   |2 +----------+ 3																*/

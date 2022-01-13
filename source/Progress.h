@@ -17,7 +17,7 @@ public:
 																{ GetInstance()->StartImpl(title, desc, maxVal); }
 	static void Reset(const std::string& desc, float maxVal)	{ GetInstance()->ResetImpl(desc, maxVal); }
 	static void End()											{ GetInstance()->m_Active = false; }
-	static void SetValue(float value)							{ GetInstance()->SetValueImpl(value); }
+	static void SetProgress(float value)						{ GetInstance()->SetProgressImpl(value); }
 
 
 private:
@@ -37,6 +37,6 @@ private:
 	void LoadingPopUpImpl() const;
 	void StartImpl(const std::string& title, const std::string& desc, float maxVal);
 	void ResetImpl(const std::string& desc, float maxVal);
-	void SetValueImpl(float value);
+	void SetProgressImpl(float value);
 };
 

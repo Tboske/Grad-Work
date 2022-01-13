@@ -40,7 +40,7 @@ void Progress::ResetImpl(const std::string& desc, float maxVal)
 	m_MaxValue = maxVal;
 }
 
-void Progress::SetValueImpl(float value)
+void Progress::SetProgressImpl(float value)
 {
 	m_Value = value / m_MaxValue;
 }

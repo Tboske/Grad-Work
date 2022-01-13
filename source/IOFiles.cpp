@@ -53,7 +53,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 			<< index.z << '\n';
 
 		++indexAmt;
-		Progress::SetValue(float(f));
+		Progress::SetProgress(float(f));
 	}
 	Progress::Reset("Constructing indices", float(verts.size()));
 	for (size_t v = 0; v < verts.size(); ++v)
@@ -63,7 +63,7 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 			<< verts[v].x	<< ' ' 
 			<< verts[v].y	<< ' '
 			<< verts[v].z	<< '\n';
-		Progress::SetValue(float(v));
+		Progress::SetProgress(float(v));
 	}
 
 
@@ -220,7 +220,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 			vert.y /= 1000;
 			vert.z /= 1000;
 
-			Progress::SetValue(float(i));
+			Progress::SetProgress(float(i));
 		}
 		myFile.close();
 	}
@@ -249,7 +249,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 				myFile >> c >> index.x >> index.y >> index.z;
 				tempIndices.push_back(index);
 
-				Progress::SetValue(float(i));
+				Progress::SetProgress(float(i));
 			}
 		}
 		myFile.close();
@@ -281,7 +281,7 @@ void IOFiles::ImportVTKData(const std::string& file, const std::string& fileName
 		vertices.emplace_back(p1, -normal);
 		vertices.emplace_back(p2, -normal);
 
-		Progress::SetValue(float(i));
+		Progress::SetProgress(float(i));
 	}
 	
 
@@ -324,7 +324,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 			vert.y /= 1000;
 			vert.z /= 1000;
 
-			Progress::SetValue(float(i));
+			Progress::SetProgress(float(i));
 		}
 		myFile.close();
 	}
@@ -345,7 +345,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 				IPoint4& index = tempIndices[i].second;
 				myFile >> c >> index.x >> index.y >> index.z >> index.w >> tempIndices[i].first;
 
-				Progress::SetValue(float(i));
+				Progress::SetProgress(float(i));
 			}
 		}
 		myFile.close();
@@ -381,7 +381,7 @@ void IOFiles::ImportVoxelData(const std::string& file, const std::string& fileNa
 		vertices.emplace_back(p3, -normal);
 		vertices.emplace_back(p2, -normal);
 
-		Progress::SetValue(float(i));
+		Progress::SetProgress(float(i));
 	}
 
 	SceneGraph::GetInstance()->AddObject(

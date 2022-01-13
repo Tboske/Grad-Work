@@ -60,9 +60,7 @@ void Mesh::RenderUI()
 	BaseObject::RenderUI();
 
 	ImGui::PushID((char*)this + 'c');
-		ImGui::Text("Color: ");
-		ImGui::SameLine();
-		if (ImGui::ColorEdit3(" ", &m_Color.r))
+		if (ImGui::ColorEdit3("Color", &m_Color.r))
 			m_pColorEffectVariable->SetFloatVector(&m_Color.r);
 	ImGui::PopID();
 
@@ -100,10 +98,11 @@ HRESULT Mesh::Initialize()
 	// Create the input layout
 	D3DX11_PASS_DESC passDesc;
 	m_pEffect->GetTechnique()->GetPassByIndex(0)->GetDesc(&passDesc);
-	result = Renderer::GetDevice()->CreateInputLayout(vertexDesc, numElements,
-		passDesc.pIAInputSignature,
-		passDesc.IAInputSignatureSize,
-		&m_pVertexLayout);
+	result = Renderer::GetDevice()->CreateInputLayout(vertexDesc
+		, numElements
+		, passDesc.pIAInputSignature 
+		, passDesc.IAInputSignatureSize
+		, &m_pVertexLayout);
 	if (FAILED(result))
 		return result;
 
@@ -117,8 +116,6 @@ HRESULT Mesh::Initialize()
 	D3D11_SUBRESOURCE_DATA initData = { 0 };
 	initData.pSysMem = m_Vertices.data();
 	result = Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
-	if (FAILED(result))
-		return result;
 
 	return result;
 }

@@ -33,25 +33,19 @@ void BaseObject::Render(ID3D11DeviceContext* pDeviceContext) const
 
 void BaseObject::RenderUI()
 {
+
 	// Position of the object
 	ImGui::PushID(this + 'p');
-		ImGui::DragFloat3("Position", &m_Transform[3].x, 0.05f, -FLT_MAX, +FLT_MAX);
+		ImGui::DragFloat3("Position", m_Transform[3].data, 0.05f, -FLT_MAX, +FLT_MAX);
 	ImGui::PopID();
 
 	// rotation of the object
 	ImGui::PushID(this + 'r');
-		static float l[3] = {0.f,0.f,0.f};
-		ImGui::DragFloat3("Rotation", l);
-	ImGui::PopID();
-
-	// scale of the object
-	ImGui::PushID(this + 's');
-		float scale[3] = { m_Transform[0].x, m_Transform[1].y, m_Transform[2].z };
-		if (ImGui::DragFloat3("Scale", scale, 0.01f, -FLT_MAX, +FLT_MAX))
+		const FVector3 lastRotation = m_Rotation;
+		if (ImGui::DragFloat3("Rotation", m_Rotation.data, 0.005f))
 		{
-			m_Transform[0].x = scale[0];
-			m_Transform[1].y = scale[1];
-			m_Transform[2].z = scale[2];
+			const FVector3 newRotation = m_Rotation - lastRotation;
+			m_Transform *= FMatrix4(MakeRotationZYX(newRotation.z, newRotation.y, newRotation.x));
 		}
 	ImGui::PopID();
 }

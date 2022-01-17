@@ -50,30 +50,32 @@ void SlicePlane::Render(ID3D11DeviceContext* pDeviceContext) const
 
 void SlicePlane::RenderUI()
 {
-	ImGui::Checkbox("Enable SlicePlane", &m_IsActive);
-
-	if (!m_IsActive)
-		return;
-
 	if (ImGui::TreeNode(this, "Slicing Plane"))
 	{
+		ImGui::Checkbox("Enable SlicePlane", &m_IsActive);
+
+		if (!m_IsActive)
+		{
+			ImGui::TreePop();
+			return;
+		}
+
 		BaseObject::RenderUI();
+
+		ImGui::PushID(this + 'q');
+			if(ImGui::ColorEdit4("PlaneColor", m_PlaneColor.data))
+				m_pColorEffectVariable->SetFloatVector(m_PlaneColor.data);
+		ImGui::PopID();
 
 		ImGui::TreePop();
 	}
 }
 
-FVector3 SlicePlane::GetOrientation() const
-{
-
-
-
-
-	return FVector3();
-}
-
 HRESULT SlicePlane::Initialize()
 {
+	m_pColorEffectVariable = m_pEffect->GetEffect()->GetVariableByName("gColor")->AsVector();
+	m_pColorEffectVariable->SetFloatVector(m_PlaneColor.data);
+
 	HRESULT result = S_OK;
 
 	static const uint32_t numElements{ 1 };

@@ -14,6 +14,7 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 	, m_pPointCloudEffect{ new Effect(L"Resources/PointShader.fx") }
 	, m_pSlicePlane{ new SlicePlane("Slicepane") }
 {
+	m_pSlicePlane->SetParent(this);
 	InitPointCloud(pointCloud, shape);
 	Initialize();
 }
@@ -25,6 +26,7 @@ PointCloud::PointCloud(const std::string& meshName, const std::vector<float>& po
 	, m_pPointCloudEffect{ new Effect(L"Resources/PointShader.fx") }
 	, m_pSlicePlane{ new SlicePlane("Slicepane")}
 {
+	m_pSlicePlane->SetParent(this);
 	InitPointCloud(pointCloud, shape);
 	Initialize();
 }
@@ -170,18 +172,7 @@ HRESULT PointCloud::Initialize()
 	if (FAILED(result))
 		return result;
 
-	// Create vertex buffer
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_IMMUTABLE;
-	bd.ByteWidth = sizeof(CubeInfo) * (uint32_t)m_RenderPoints.size();
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	D3D11_SUBRESOURCE_DATA initData = { 0 };
-	initData.pSysMem = m_RenderPoints.data();
-	result = Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
-
-	return result;
+	return CreateVertexBuffer();
 }
 
 void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape)
@@ -219,6 +210,20 @@ void PointCloud::InitPointCloud(const std::vector<float>& pointCloud, const std:
 	}
 
 	Progress::End();
+}
+
+HRESULT PointCloud::CreateVertexBuffer()
+{
+	// Create vertex buffer
+	D3D11_BUFFER_DESC bd = {};
+	bd.Usage = D3D11_USAGE_IMMUTABLE;
+	bd.ByteWidth = sizeof(CubeInfo) * (uint32_t)m_RenderPoints.size();
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	bd.MiscFlags = 0;
+	D3D11_SUBRESOURCE_DATA initData = { 0 };
+	initData.pSysMem = m_RenderPoints.data();
+	return Renderer::GetDevice()->CreateBuffer(&bd, &initData, &m_pVertexBuffer);
 }
 
 void PointCloud::StartExport() const
@@ -289,4 +294,17 @@ unsigned char PointCloud::GetCubeFillID(uint32_t z, uint32_t y, uint32_t x) cons
 		c[7] = GetValue( 0, z + 1, y + 1, x    ) > m_RubbishValue;	/*			    0 +----------+ 1																*/
 																		
 	return static_cast<unsigned char>(c.to_ulong());
+}
+
+void PointCloud::SlicePointCloud(const FVector3& orientation)
+{
+	for (CubeInfo& cube : m_RenderPoints)
+	{
+		auto vec1 = cube.pos - m_pSlicePlane->GetPosition();
+
+		if (Dot(vec1, orientation) < 0)
+			cube.pos.x += float(*std::ranges::max_element(m_Shape)) * 1.5f;
+	}
+
+	CreateVertexBuffer();
 }

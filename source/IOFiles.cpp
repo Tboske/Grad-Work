@@ -86,27 +86,25 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 
 void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint3& pos)
 {
-	auto inst = GetInstance();
+	IOFiles* inst = GetInstance();
 	Progress::Start("Start loading in Mesh");
 
-	std::regex fileType{ ".+\\/(.+)\\.(.+)$" };
+	const std::regex fileType{ "^.*?([a-zA-Z0-9]+)\\.([a-zA-Z]+)$" };
 	std::smatch sm{};
 
-	const std::string importLocation{ "Resources/Import/" + file};
-
-	if (std::regex_match(importLocation, sm, fileType))
+	if (std::regex_match(file, sm, fileType))
 	{
 		if (name.empty())
 			name = sm[1];
 
 		if (sm[2] == "obj")
-			inst->ImportOBJData(importLocation, name, pos);
+			inst->ImportOBJData(file, name, pos);
 		else if (sm[2] == "vtk")
-			inst->ImportVTKData(importLocation, name, pos);
+			inst->ImportVTKData(file, name, pos);
 	/*	else if (sm[2] == "vvtk")
 			inst->ImportVoxelData(importLocation, vertices, indices);*/
 		else if (sm[2] == "var")
-			inst->ImportIthildinFile(importLocation, name, pos);
+			inst->ImportIthildinFile(file, name, pos);
 		else
 			std::cout << "Unsupported file extension\n";
 	}

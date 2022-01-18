@@ -21,6 +21,8 @@ public:
 	[[nodiscard]] const std::vector<uint32_t>& GetShape() const { return m_Shape; }
 	[[nodiscard]] float GetRubbishValue() const { return m_RubbishValue; }
 
+	void SlicePointCloud(const FVector3& orientation);
+
 private:
 	struct CubeInfo 
 	{
@@ -32,6 +34,7 @@ private:
 		{
 			// excludes the cubes that have no or all active corners
 			return cubeID != 0 && cubeID != 255;
+			//return cubeID != 0;
 		}
 	};
 
@@ -55,6 +58,7 @@ private:
 	char m_Filename[50];
 	HRESULT Initialize();
 	void InitPointCloud(const std::vector<float>& pointCloud, const std::vector<uint32_t>& shape);
+	HRESULT CreateVertexBuffer();
 
 	void StartExport() const;
 	[[nodiscard]] float GetValue(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const;
@@ -62,9 +66,9 @@ private:
 	[[nodiscard]] uint32_t GetPos(uint32_t t, uint32_t z, uint32_t y, uint32_t x) const
 	{
 		return (t * m_Shape[1] * m_Shape[2] * m_Shape[3])
-		+ (z * m_Shape[2] * m_Shape[3])
-		+ (y * m_Shape[3])
-		+ x;
+			+ (z * m_Shape[2] * m_Shape[3])
+			+ (y * m_Shape[3])
+			+ x;
 	}
 };
 

@@ -17,16 +17,7 @@ private:
 		ImGuiWindowFlags_NoCollapse 
 	};
 
-	char m_ImportFile[128]{"test"};
+	char m_ImportFile[128]{"C:\\School\\Grad Work\\Project\\source\\Resources\\Import\\test.var"};
 	char m_MeshName[64]{};
-	int m_SelectedFileType = 3;
-	const char* m_pFileTypes[4]{ ".obj", ".vtk", ".vvtk", ".var"};
-	float m_Pos[3] = { 0,0,0 };
-
-	int m_SelectedAlgorithm = 0;
-	const char* m_pAlgorithms[2]{ "Marching Cubes", "Dual Contouring" };
-
-// Functions
-	void ImportTab();
 };
 

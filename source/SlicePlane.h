@@ -3,6 +3,8 @@
 #include "BaseObject.h"
 #include <array>
 
+class PointCloud;
+
 class SlicePlane final : public BaseObject
 {
 public:
@@ -17,6 +19,8 @@ public:
 	{
 		return FVector3();
 	}
+
+	void SetParent(PointCloud* pParent) { m_pParent = pParent; }
 
 private:
 	ID3D11InputLayout* m_pVertexLayout = nullptr;
@@ -35,6 +39,8 @@ private:
 	};
 
 	bool m_IsActive = false;
+
+	PointCloud* m_pParent = nullptr;
 
 	HRESULT Initialize();
 };

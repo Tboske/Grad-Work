@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "SlicePlane.h"
 
+#include "PointCloud.h"
 #include "Renderer.h"
 
 SlicePlane::SlicePlane(const std::string& meshName)
@@ -66,6 +67,12 @@ void SlicePlane::RenderUI()
 			if(ImGui::ColorEdit4("PlaneColor", m_PlaneColor.data))
 				m_pColorEffectVariable->SetFloatVector(m_PlaneColor.data);
 		ImGui::PopID();
+
+		if (ImGui::Button("Slice!"))
+		{
+			m_pParent->SlicePointCloud(m_Rotation);
+			m_IsActive = false;
+		}
 
 		ImGui::TreePop();
 	}

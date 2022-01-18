@@ -6,6 +6,7 @@
 #include "Progress.h"
 #include "Renderer.h"
 
+
 UI::UI(SDL_Window* pWindow, ID3D11DeviceContext* pDeviceContext)
 {
 	// Setup Dear ImGui context
@@ -50,33 +51,28 @@ void UI::RenderUI(float height)
 		ImGui::SetWindowSize({ 300, height });
 
 		// import related
-		ImGui::Text("Import");
-		ImGui::Text("For now paste the files into Resources/Input");
-		ImGui::TextColored({ 1,0,0,1 }, "Enter the Filename");
-		ImGui::Combo("FileType", &m_SelectedFileType, m_pFileTypes, IM_ARRAYSIZE(m_pFileTypes));
+		ImGui::TextColored({0,1,0,1}, "Import");
+		ImGui::TextColored({1,1,0,1},"available filetypes: .var .vtk");
+		ImGui::TextWrapped("for .vtk files, make sure it includes the .pts and .surf in the same directory!");
+		ImGui::TextColored({ 1,0,0,1 }, "Copy and paste the file path!");
 		ImGui::InputTextWithHint("Filename", "VoxelFile", m_ImportFile, IM_ARRAYSIZE(m_ImportFile));
-		ImGui::InputTextWithHint("MeshName", "Default", m_MeshName, IM_ARRAYSIZE(m_MeshName));
-		ImGui::InputFloat3("Position", m_Pos);
+		ImGui::InputTextWithHint("MeshName", "Optional", m_MeshName, IM_ARRAYSIZE(m_MeshName));
 		if (ImGui::Button("Import!", { -1, 25 }))
 		{
-			std::string file{};
-			file += m_ImportFile;
-			file += m_pFileTypes[m_SelectedFileType];
-
-			std::thread thr(IOFiles::ImportFile, file, m_MeshName, FPoint3{ m_Pos[0], m_Pos[1], m_Pos[2] });
+			std::thread thr(IOFiles::ImportFile, m_ImportFile, m_MeshName, FPoint3{ 0,0,0 });
 			thr.detach();
 		}
 
 		// mesh settings
 		ImGui::Spacing();
 		ImGui::Separator();
-		ImGui::Text("MeshList");
+		ImGui::TextColored({ 0,1,0,1 }, "MeshList");
 		const auto& objects = SceneGraph::GetInstance()->GetObjects();
-		for (size_t i = 0; i < objects.size(); ++i)
+		for (BaseObject* object : objects)
 		{
-			if (ImGui::TreeNode(objects[i], objects[i]->GetMeshName().c_str()))
+			if (ImGui::TreeNode(object, object->GetMeshName().c_str()))
 			{
-				objects[i]->RenderUI();
+				object->RenderUI();
 				ImGui::TreePop();
 			}
 		}

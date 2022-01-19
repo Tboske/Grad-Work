@@ -27,7 +27,7 @@ void Renderer::InitializeImpl(SDL_Window* pWindow)
 	m_pUI = new UI(m_pWindow, m_pDeviceContext);
 }
 
-void Renderer::RenderImpl()
+void Renderer::RenderImpl() const
 {
 	if (!m_IsInitialized)
 		return;

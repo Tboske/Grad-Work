@@ -48,6 +48,6 @@ private:
 	HRESULT InitializeDirextX();
 	void CleanUpDirectX();
 	void InitializeImpl(SDL_Window* pWindow);
-	void RenderImpl();
+	void RenderImpl() const;
 };
 

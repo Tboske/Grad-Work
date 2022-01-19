@@ -52,18 +52,24 @@ VS_OUTPUT VS(VS_INPUT input)
 //	        Pixel Shader Functions
 // ----------------------------------------------------------------------------------
 
-float4 GetObservedArea(float3 normal)
-{
-	float observedArea = dot(-normal, gLightDirection);
-	// if observedArea is positive, the bool is true, and the observedarea will stay the same
-	observedArea = observedArea * (observedArea > 0.f);
 
-	return float4(observedArea, observedArea, observedArea, 1.f);
+float map(float value, float min1, float max1, float min2, float max2)
+{
+    // normalize the value / a.k.a get a percent
+    const float norm = (value - min1) / (max1 - min1);
+
+    return norm * (max2 - min2) + min2;
 }
 
-float4 Lambert(float3 color, float reflectance)
+float4 GetObservedArea(float3 normal)
 {
-	return float4(color * (reflectance / gPi), 1.f);
+    float observedArea = dot(-normal, gLightDirection);
+	// if observedArea is positive, the bool is true, and the observedarea will stay the same
+    //observedArea = observedArea * (observedArea > 0.f);
+
+    observedArea = map(observedArea, -1.f, 1.f, 0.f, 1.f);
+
+    return float4(observedArea, observedArea, observedArea, 1.f);
 }
 
 // ==================================================================================

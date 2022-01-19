@@ -108,18 +108,23 @@ void MCGS(point VS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 //	        Pixel Shader 
 // ----------------------------------------------------------------------------------
 
+float map(float value, float min1, float max1, float min2, float max2)
+{
+    // normalize the value / a.k.a get a percent
+    const float norm = (value - min1) / (max1 - min1);
+
+    return norm * (max2 - min2) + min2;
+}
+
 float4 GetObservedArea(float3 normal)
 {
     float observedArea = dot(-normal, gLightDirection);
 	// if observedArea is positive, the bool is true, and the observedarea will stay the same
-    observedArea = observedArea * (observedArea > 0.f);
+    //observedArea = observedArea * (observedArea > 0.f);
+
+    observedArea = map(observedArea, -1.f, 1.f, 0.f, 1.f);
 
     return float4(observedArea, observedArea, observedArea, 1.f);
-}
-
-float4 Lambert(float3 color, float reflectance)
-{
-    return float4(color * (reflectance / gPi), 1.f);
 }
 
 float4 MCPS(GS_OUTPUT input) : SV_TARGET

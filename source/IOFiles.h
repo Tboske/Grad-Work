@@ -13,7 +13,7 @@ public:
 
 	// intentional copy
 	static bool ExportMesh(Mesh* mesh, std::string fileName = "");
-	static void ImportFile(const std::string& file, std::string name = "", const FPoint3& pos = {0,0,0});
+	static void ImportFile(std::string file, std::string name = "", const FPoint3& pos = {0,0,0});
 
 
 private:

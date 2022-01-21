@@ -17,7 +17,7 @@ private:
 		ImGuiWindowFlags_NoCollapse 
 	};
 
-	char m_ImportFile[128]{"C:\\School\\Grad Work\\Project\\source\\Resources\\Import\\test.var"};
+	char m_ImportFile[256]{};
 	char m_MeshName[64]{};
 };
 

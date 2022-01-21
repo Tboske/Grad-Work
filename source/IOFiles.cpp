@@ -84,7 +84,8 @@ bool IOFiles::ExportMesh(Mesh* mesh, std::string fileName)
 	return true;
 }
 
-void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint3& pos)
+// intentional copy of std::string
+void IOFiles::ImportFile(std::string file, std::string name, const FPoint3& pos)
 {
 	IOFiles* inst = GetInstance();
 	Progress::Start("Start loading in Mesh");
@@ -108,6 +109,8 @@ void IOFiles::ImportFile(const std::string& file, std::string name, const FPoint
 		else
 			std::cout << "Unsupported file extension\n";
 	}
+	else
+		std::cout << "Invalid file location\n";
 	Progress::End();
 }
 

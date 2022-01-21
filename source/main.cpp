@@ -19,12 +19,6 @@
 #include "IOFiles.h"
 #include "objects.h"
 
-void ShutDown(SDL_Window* pWindow)
-{
-	SDL_DestroyWindow(pWindow);
-	SDL_Quit();
-}
-
 
 int SDL_main(int argc, char* args[])
 {
@@ -109,6 +103,7 @@ int SDL_main(int argc, char* args[])
 	Renderer::Cleanup();
 
 	//Shutdown "framework"
-	ShutDown(pWindow);
+	SDL_DestroyWindow(pWindow);
+	SDL_Quit();
 	return 0;
 }
